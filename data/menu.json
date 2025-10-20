@@ -1,0 +1,95 @@
+{
+  "categories": [
+    {
+      "id": "specialty",
+      "name": "Specialty Pizzas"
+    },
+    {
+      "id": "build",
+      "name": "Build Your Own"
+    },
+    {
+      "id": "sides",
+      "name": "Sides"
+    }
+  ],
+  "items": [
+    {
+      "id": "pep-supreme",
+      "name": "Pepperoni Supreme",
+      "category": "specialty",
+      "basePrice": 14.0,
+      "sizes": [
+        "Small",
+        "Medium",
+        "Large"
+      ],
+      "desc": "Loaded with double pepperoni and mozzarella.",
+      "img": "https://wallpaperaccess.com/full/4847317.jpg",
+      "active": true
+    },
+    {
+      "id": "marg",
+      "name": "Margherita",
+      "category": "specialty",
+      "basePrice": 13.0,
+      "sizes": [
+        "Small",
+        "Medium",
+        "Large"
+      ],
+      "desc": "Tomato, fresh mozzarella, basil, olive oil.",
+      "img": "https://images.pexels.com/photos/16890470/pexels-photo-16890470.jpeg",
+      "active": true
+    },
+    {
+      "id": "garlic-knots",
+      "name": "Garlic Knots",
+      "category": "sides",
+      "basePrice": 6.0,
+      "sizes": [],
+      "desc": "Buttery knots with garlic and herbs.",
+      "img": "https://media.istockphoto.com/id/1330792514/photo/soft-and-chewy-parmesan-garlic-knots.jpg?b=1&s=612x612&w=0&k=20&c=6JJ2zmtkgD-GZEDuSUHE5bPQ5KjM-ChfOV0qFUtbLhY=",
+      "active": true
+    }
+  ],
+  "toppings": [
+    {
+      "id": "pep",
+      "name": "Pepperoni",
+      "price": 1.5,
+      "active": true
+    },
+    {
+      "id": "sau",
+      "name": "Sausage",
+      "price": 1.5,
+      "active": true
+    },
+    {
+      "id": "mus",
+      "name": "Mushrooms",
+      "price": 1.0,
+      "active": true
+    },
+    {
+      "id": "oli",
+      "name": "Olives",
+      "price": 1.0,
+      "active": true
+    },
+    {
+      "id": "jal",
+      "name": "Jalape\u00f1os",
+      "price": 1.0,
+      "active": true
+    }
+  ],
+  "sizeMultipliers": {
+    "Small": 1.0,
+    "Medium": 1.25,
+    "Large": 1.5
+  },
+  "taxRate": 0.07,
+  "discounts": []
+}
