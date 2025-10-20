@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="order-summary">
         <h3>Payment Approved (Staging)</h3>
         <p>Order <strong>${orderId}</strong> has been recorded locally.</p>
-        <p>No real card was charged. You can reference this in your Sprint 1 demo.</p>
+        <p>No real card was charged.</p>
         <a class="primary" href="./index.html">Return to Home</a>
       </div>
     `;
