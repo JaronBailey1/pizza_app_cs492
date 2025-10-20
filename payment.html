@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Staging Payment • Pizza App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="./assets/logo.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="./payment.js"></script>
+  <style>
+    .badge-staging{background:#fde68a;color:#7c2d12;border:1px solid #f59e0b;
+      padding:4px 8px;border-radius:8px;font-weight:700;}
+    .pay-grid{display:grid;gap:12px;grid-template-columns:1fr;}
+    .order-summary{background:#0d162a;border:1px solid var(--border);border-radius:12px;padding:12px;}
+    .inline{display:flex; gap:10px;}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./assets/logo.svg" alt="logo" class="logo"/>
+      <div class="brand-text">
+        <strong>Payment</strong>
+        <span class="badge-staging">STAGING • NO REAL CHARGES</span>
+      </div>
+    </div>
+    <nav><a href="./index.html">← Back to Cart</a></nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Order Summary</h2>
+      <div id="orderItems" class="order-summary"></div>
+      <div class="order-summary">
+        <div>Subtotal: <strong id="sumSub">$0.00</strong></div>
+        <div>Tax: <strong id="sumTax">$0.00</strong></div>
+        <div class="grand">Total: <strong id="sumTotal">$0.00</strong></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Payment (Mock)</h2>
+      <form id="payForm" class="pay-grid">
+        <label>Card Number (test): <input id="cardNumber" placeholder="4242 4242 4242 4242" required /></label>
+        <div class="inline">
+          <label>Exp MM/YY <input id="cardExp" placeholder="12/34" required/></label>
+          <label>CVC <input id="cardCvc" placeholder="123" required/></label>
+          <label>ZIP <input id="cardZip" placeholder="00000" required/></label>
+        </div>
+        <button class="primary" type="submit">Pay Now (Staging)</button>
+        <small class="note">This is a Sprint-1 mock flow; no real payment is processed.</small>
+      </form>
+      <div id="payResult" style="margin-top:12px;"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><small>© <span id="year"></span> Staging</small></footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
+</body>
+</html>

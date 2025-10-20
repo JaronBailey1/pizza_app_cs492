@@ -172,7 +172,10 @@ async function boot(){
   renderBuilder(menu);
   updateCartCount();
   renderCart();
-  wire();
+  wire(checkoutBtn?.addEventListener("click", () => {
+  // Simple nav to staging payment page
+  window.location.href = "./payment.html";
+}));
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
