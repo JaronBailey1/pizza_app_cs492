@@ -1,7 +1,6 @@
-
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
-const SEED_MENU = {"categories": [{"id": "specialty", "name": "Specialty Pizzas"}, {"id": "build", "name": "Build Your Own Pizza"}, {"id": "sides", "name": "Sides"}], "items": [{"id": "pep-supreme", "name": "Heavy Hitter", "category": "specialty", "basePrice": 14.0, "sizes": ["Small", "Medium", "Large"], "desc": "Loaded with double pepperoni and mozzarella.", "img": "https://picsum.photos/seed/pep/800/500", "active": true}, {"id": "marg", "name": "Slice of Summer", "category": "specialty", "basePrice": 13.0, "sizes": ["Small", "Medium", "Large"], "desc": "Tomato, fresh mozzarella, basil, olive oil.", "img": "https://picsum.photos/seed/marg/800/500", "active": true}, {"id": "garlic-knots", "name": "Get Twisted", "category": "sides", "basePrice": 6.0, "sizes": [], "desc": "Buttery knots with garlic and herbs.", "img": "https://picsum.photos/seed/knots/800/500", "active": true}], "toppings": [{"id": "pep", "name": "Pepperoni", "price": 1.5, "active": true}, {"id": "sau", "name": "Sausage", "price": 1.5, "active": true}, {"id": "mus", "name": "Mushrooms", "price": 1.0, "active": true}, {"id": "oli", "name": "Olives", "price": 1.0, "active": true}, {"id": "jal", "name": "Jalape\u00f1os", "price": 1.0, "active": true}], "sizeMultipliers": {"Small": 1.0, "Medium": 1.25, "Large": 1.5}, "taxRate": 0.07, "discounts": []};
+const SEED_MENU = {"categories": [{"id": "specialty", "name": "Specialty Pizzas"}, {"id": "build", "name": "Build Your Own"}, {"id": "sides", "name": "Sides"}], "items": [{"id": "pep-supreme", "name":[...]}
 
 function currency(n) { return `$${n.toFixed(2)}`; }
 const $ = (id) => document.getElementById(id);
@@ -57,7 +56,7 @@ function renderMenuList(menu){
       <div class="content">
         <h3>${i.name}</h3>
         <p>${i.desc}</p>
-        <div class="price">$${i.basePrice.toFixed(2)}</div>
+        <div class="price">from $${i.basePrice.toFixed(2)}</div>
         ${i.sizes?.length ? `
           <label>Size:
             <select data-id="${i.id}" class="sizePick">
@@ -135,7 +134,7 @@ function renderCart(){
     </div>
   `).join("");
   cartItems.querySelectorAll("button[data-remove]").forEach(b=> b.addEventListener("click", ()=>{ let c=getCart().filter(x=>x.id!==b.dataset.remove); saveCart(c); renderCart(); }));
-  cartItems.querySelectorAll("button[data-qty]").forEach(b=> b.addEventListener("click", ()=>{ let c=getCart(); const it=c.find(x=>x.id===b.dataset.qty); const d=Number(b.dataset.d); it.qty=Math.max(1,it.qty+d); it.total=it.unit*it.qty; saveCart(c); renderCart(); }));
+  cartItems.querySelectorAll("button[data-qty]").forEach(b=> b.addEventListener("click", ()=>{ let c=getCart(); const it=c.find(x=>x.id===b.dataset.qty); const d=Number(b.dataset.d); it.qty=Math.[...]
   recalcTotals();
 }
 
@@ -152,6 +151,104 @@ function recalcBuildPrice(){
   estPriceEl.textContent=currency(unit*qty);
 }
 
+// --- New modal / browse-all popup functions ---
+
+// Create minimal styles for modal if not present
+function ensureBrowseModalStyles(){
+  if (document.getElementById("browseModalStyles")) return;
+  const s = document.createElement("style");
+  s.id = "browseModalStyles";
+  s.innerText = `
+  .browse-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:10000; }
+  .browse-modal { background: #fff; width: 90%; max-width:900px; max-height:80vh; overflow:auto; border-radius:8px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+  .browse-modal h2{margin:0 0 8px 0;}
+  .browse-modal .close { position:absolute; right:20px; top:14px; background:transparent; border:none; font-size:20px; cursor:pointer; }
+  .browse-list { display:flex; flex-direction:column; gap:12px; }
+  .browse-item { display:flex; gap:12px; align-items:flex-start; border-bottom:1px solid #eee; padding-bottom:8px; }
+  .browse-item img { width:88px; height:64px; object-fit:cover; border-radius:6px; }
+  .browse-item .meta { flex:1; }
+  .browse-item .meta h3{margin:0 0 6px 0;}
+  `;
+  document.head.appendChild(s);
+}
+
+// Create the modal DOM if it doesn't exist
+function ensureBrowseModalDom(){
+  if (document.getElementById("browseModalBackdrop")) return;
+  ensureBrowseModalStyles();
+
+  const backdrop = document.createElement("div");
+  backdrop.id = "browseModalBackdrop";
+  backdrop.className = "browse-modal-backdrop";
+  backdrop.style.display = "none";
+
+  const modal = document.createElement("div");
+  modal.className = "browse-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.innerHTML = `
+    <button class="close" id="browseModalClose" aria-label="Close">&times;</button>
+    <h2>Full Menu</h2>
+    <div id="browseModalContent" class="browse-list" tabindex="0"></div>
+  `;
+
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+
+  // close handlers
+  document.getElementById("browseModalClose").addEventListener("click", hideBrowseModal);
+  backdrop.addEventListener("click", (e)=> { if (e.target === backdrop) hideBrowseModal(); });
+  document.addEventListener("keydown", (e)=> { if (e.key === "Escape") hideBrowseModal(); });
+}
+
+function showBrowseModal(menu){
+  ensureBrowseModalDom();
+  const content = document.getElementById("browseModalContent");
+  if (!menu) menu = getMenu();
+  // group by categories for a nicer display
+  const categories = (menu?.categories || []).reduce((acc,c)=>{ acc[c.id] = {...c, items:[]}; return acc; }, {});
+  (menu?.items || []).forEach(it => {
+    if (!categories[it.category]) {
+      categories[it.category] = { id: it.category, name: it.category, items: [] };
+    }
+    categories[it.category].items.push(it);
+  });
+
+  const html = Object.values(categories).map(cat => {
+    const items = (cat.items || []).filter(i=> i.active !== false).map(i => `
+      <div class="browse-item">
+        <img src="${i.img || 'images/placeholder.png'}" alt="${i.name}" />
+        <div class="meta">
+          <h3>${i.name}</h3>
+          <div class="desc">${i.desc || ''}</div>
+          <div class="price">from ${currency(i.basePrice || 0)}</div>
+        </div>
+        <div>
+          <button class="primary" data-add="${i.id}">Add</button>
+        </div>
+      </div>
+    `).join("");
+    return `<h3 style="margin-top:12px">${cat.name}</h3>${items}`;
+  }).join("");
+
+  content.innerHTML = html || "<div>No menu items found.</div>";
+
+  // wire add buttons inside modal
+  content.querySelectorAll("button[data-add]").forEach(btn=> btn.addEventListener("click", () => {
+    addPresetToCart(btn.dataset.add);
+    // Optionally close modal after add: hideBrowseModal();
+  }));
+
+  document.getElementById("browseModalBackdrop").style.display = "flex";
+}
+
+function hideBrowseModal(){
+  const b = document.getElementById("browseModalBackdrop");
+  if (b) b.style.display = "none";
+}
+
+// --- End modal functions ---
+
 function wire(){
   $("addBuildBtn")?.addEventListener("click", addBuildToCart);
   $("toppingsWrap")?.addEventListener("change", recalcBuildPrice);
@@ -164,9 +261,34 @@ function wire(){
   $("categoryFilter")?.addEventListener("change", ()=>renderMenuList(getMenu()));
 }
 
+// helper: ensure a browse button exists and wire it
+function ensureBrowseButton(){
+  if ($("browseAllBtn")) return;
+  const btn = document.createElement("button");
+  btn.id = "browseAllBtn";
+  btn.className = "secondary";
+  btn.innerText = "Browse All";
+  // try to place near categoryFilter if available, otherwise before menuGrid
+  if (categoryFilter && categoryFilter.parentNode) {
+    categoryFilter.parentNode.insertBefore(btn, categoryFilter.nextSibling);
+  } else if (menuGrid && menuGrid.parentNode) {
+    menuGrid.parentNode.insertBefore(btn, menuGrid);
+  } else {
+    document.body.insertBefore(btn, document.body.firstChild);
+  }
+  btn.addEventListener("click", async ()=>{
+    const menu = await loadMenu();
+    showBrowseModal(menu);
+  });
+}
+
 async function boot(){
   cacheEls();
   const menu = await loadMenu();
+
+  // create and wire the browse-all button
+  ensureBrowseButton();
+
   renderCategoryOptions(menu);
   renderMenuList(menu);
   renderBuilder(menu);
