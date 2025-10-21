@@ -1,5 +1,3 @@
-
-
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
@@ -107,13 +105,12 @@ function cacheEls(){
 }
 
 function renderCategoryOptions(menu){
-  // If categoryFilter isn't present on the page, skip - but menu list should still render
   if (!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>` + (menu.categories || []).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
 function renderMenuList(menu){
-  if (!menuGrid) return; // nothing to render into
+  if (!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value || "all";
   const items = (menu.items || []);
@@ -140,7 +137,6 @@ function renderMenuList(menu){
     </article>
   `).join("");
 
-  // wire add buttons inside the menu grid
   menuGrid.querySelectorAll("button[data-add]").forEach(btn=> {
     btn.addEventListener("click", () => addPresetToCart(btn.dataset.add));
   });
@@ -182,7 +178,6 @@ function addPresetToCart(itemId){
 
 function addBuildToCart(){
   const menu = getMenu();
-  // defensive reads
   const baseId = baseSelect?.value;
   const base = (baseId === "plain-cheese") ? {name:"Plain Cheese", basePrice:10.0, sizes:["Small","Medium","Large"]} : (menu.items || []).find(i=>i.id===baseId);
   if (!base) return;
@@ -190,7 +185,6 @@ function addBuildToCart(){
   const mult = menu.sizeMultipliers?.[size] ?? 1;
   const toppingChecks = [...(toppingsWrap?.querySelectorAll("input[type=checkbox]:checked")||[])];
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0), 0);
-  // simple, safe unit calc
   const basePrice = Number(base.basePrice || 0);
   const unit = (basePrice * mult) + toppingCost;
   const qty = Math.max(1, Number(qtyInput?.value||1));
@@ -218,14 +212,12 @@ function renderCart(){
     </div>
   `).join("");
 
-  // Remove handlers
   cartItems.querySelectorAll("button[data-remove]").forEach(b=> b.addEventListener("click", ()=> {
     const newCart = getCart().filter(x=>x.id!==b.dataset.remove);
     saveCart(newCart);
     renderCart();
   }));
 
-  // Qty change handlers
   cartItems.querySelectorAll("button[data-qty]").forEach(b=> b.addEventListener("click", ()=> {
     const c = getCart();
     const it = c.find(x=>x.id===b.dataset.qty);
@@ -254,9 +246,6 @@ function recalcBuildPrice(){
 }
 
 // --- Browse-all modal / popup functions ---
-// Injects minimal styles, creates modal DOM, and provides show/hide and a helper to
-// ensure a "Browse All" button exists on the page.
-
 function ensureBrowseModalStyles(){
   if (document.getElementById("browseModalStyles")) return;
   const s = document.createElement("style");
@@ -297,7 +286,6 @@ function ensureBrowseModalDom(){
   backdrop.appendChild(modal);
   document.body.appendChild(backdrop);
 
-  // close handlers
   document.getElementById("browseModalClose").addEventListener("click", hideBrowseModal);
   backdrop.addEventListener("click", (e)=> { if (e.target === backdrop) hideBrowseModal(); });
   document.addEventListener("keydown", (e)=> { if (e.key === "Escape") hideBrowseModal(); });
@@ -308,7 +296,6 @@ function showBrowseModal(menu){
   const content = document.getElementById("browseModalContent");
   if (!menu) menu = getMenu();
 
-  // group by categories for nicer display
   const categories = (menu?.categories || []).reduce((acc,c)=>{ acc[c.id] = {...c, items:[]}; return acc; }, {});
   (menu?.items || []).forEach(it => {
     if (!categories[it.category]) {
@@ -336,11 +323,8 @@ function showBrowseModal(menu){
 
   content.innerHTML = html || "<div>No menu items found.</div>";
 
-  // wire add buttons inside modal
   content.querySelectorAll("button[data-add]").forEach(btn=> btn.addEventListener("click", () => {
     addPresetToCart(btn.dataset.add);
-    // Optionally keep modal open or close:
-    // hideBrowseModal();
   }));
 
   document.getElementById("browseModalBackdrop").style.display = "flex";
@@ -357,7 +341,6 @@ function ensureBrowseButton(){
   btn.id = "browseAllBtn";
   btn.className = "secondary";
   btn.innerText = "Browse All";
-  // try to place near categoryFilter if available, otherwise before menuGrid
   if (categoryFilter && categoryFilter.parentNode) {
     categoryFilter.parentNode.insertBefore(btn, categoryFilter.nextSibling);
   } else if (menuGrid && menuGrid.parentNode) {
@@ -370,7 +353,6 @@ function ensureBrowseButton(){
     showBrowseModal(menu);
   });
 }
-// --- end browse-all modal / popup functions ---
 
 function wire(){
   $("addBuildBtn")?.addEventListener("click", addBuildToCart);
@@ -398,7 +380,6 @@ async function boot(){
   renderCart();
   wire();
 
-  // wire checkout nav
   checkoutBtn?.addEventListener("click", () => {
     window.location.href = "./payment.html";
   });
