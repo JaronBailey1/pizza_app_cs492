@@ -16,7 +16,7 @@
   "items": [
     {
       "id": "pep-supreme",
-      "name": "Pepperoni Supreme",
+      "name": "Heavy Hitter",
       "category": "specialty",
       "basePrice": 14.0,
       "sizes": [
@@ -30,7 +30,7 @@
     },
     {
       "id": "marg",
-      "name": "Margherita",
+      "name": "Slice of Summer",
       "category": "specialty",
       "basePrice": 13.0,
       "sizes": [
@@ -44,7 +44,7 @@
     },
     {
       "id": "garlic-knots",
-      "name": "Garlic Knots",
+      "name": "Get Twisted",
       "category": "sides",
       "basePrice": 6.0,
       "sizes": [],
