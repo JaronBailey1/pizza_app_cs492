@@ -54,23 +54,29 @@ function renderMenuList(menu){
     (i.name.toLowerCase().includes(term) || i.desc.toLowerCase().includes(term))
   );
 
-  menuGrid.innerHTML = filtered.map(i => `
-    <article class="item">
-      <img src="${i.img}" alt="${i.name}" />
-      <div class="content">
-        <h3>${i.name}</h3>
-        <p>${i.desc}</p>
-        <div class="price" data-id="${i.id}">from $${i.basePrice.toFixed(2)}</div>
-        ${i.sizes?.length ? `
-          <label>Size:
-            <select data-id="${i.id}" class="sizePick">
-              ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
-            </select>
-          </label>` : ``}
-        <button class="primary" data-add="${i.id}">Add to Cart</button>
-      </div>
-    </article>
-  `).join("");
+  menuGrid.innerHTML = filtered.map(i => {
+    const defaultSize = i.sizes?.[0] || null;
+    const mult = defaultSize ? (menu.sizeMultipliers[defaultSize] ?? 1) : 1;
+    const price = i.basePrice * mult;
+
+    return `
+      <article class="item">
+        <img src="${i.img}" alt="${i.name}" />
+        <div class="content">
+          <h3>${i.name}</h3>
+          <p>${i.desc}</p>
+          <div class="price" data-id="${i.id}">$${price.toFixed(2)}</div>
+          ${i.sizes?.length ? `
+            <label>Size:
+              <select data-id="${i.id}" class="sizePick">
+                ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
+              </select>
+            </label>` : ``}
+          <button class="primary" data-add="${i.id}">Add to Cart</button>
+        </div>
+      </article>
+    `;
+  }).join("");
 
   // Update price when size changes
   menuGrid.querySelectorAll(".sizePick").forEach(sel => {
@@ -81,12 +87,12 @@ function renderMenuList(menu){
       const size = e.target.value;
       const mult = menuData.sizeMultipliers[size] ?? 1;
       const newPrice = item.basePrice * mult;
-      e.target.closest(".item").querySelector(".price").textContent = `from $${newPrice.toFixed(2)}`;
+      e.target.closest(".item").querySelector(".price").textContent = `$${newPrice.toFixed(2)}`;
       console.log(`Size changed for ${item.name}: ${size} (multiplier ${mult}) => $${newPrice.toFixed(2)}`);
     });
   });
 
-  // Respect selected size when adding to cart
+  // Add correct size to cart
   menuGrid.querySelectorAll("button[data-add]").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.add;
@@ -111,7 +117,7 @@ function addPresetToCart(itemId, selectedSize = null){
 
   const line = { 
     id: crypto.randomUUID(), 
-    name:`${item.name}${size ? ` (${size})` : ""}`, 
+    name: item.name,  // keep true name
     basePrice: item.basePrice,
     size, 
     toppings:[], 
@@ -165,7 +171,7 @@ function renderCart(){
   cartItems.innerHTML = cart.map(i=>`
     <div class="cart-row">
       <div>
-        <div><strong>${i.name}</strong> × ${i.qty}</div>
+        <div><strong>${i.name}${i.size ? ` (${i.size})` : ""}</strong> × ${i.qty}</div>
         ${i.toppings?.length ? `<small>${i.toppings.join(", ")}</small>` : ``}
         <small>${currency(i.unit)} each</small>
       </div>
@@ -177,8 +183,27 @@ function renderCart(){
       </div>
     </div>
   `).join("");
-  cartItems.querySelectorAll("button[data-remove]").forEach(b=> b.addEventListener("click", ()=>{ let c=getCart().filter(x=>x.id!==b.dataset.remove); saveCart(c); renderCart(); }));
-  cartItems.querySelectorAll("button[data-qty]").forEach(b=> b.addEventListener("click", ()=>{ let c=getCart(); const it=c.find(x=>x.id===b.dataset.qty); const d=Number(b.dataset.d); it.qty=Math.max(1,it.qty+d); it.total=it.unit*it.qty; saveCart(c); renderCart(); }));
+
+  cartItems.querySelectorAll("button[data-remove]").forEach(b=> 
+    b.addEventListener("click", ()=>{ 
+      let c=getCart().filter(x=>x.id!==b.dataset.remove); 
+      saveCart(c); 
+      renderCart(); 
+    })
+  );
+
+  cartItems.querySelectorAll("button[data-qty]").forEach(b=> 
+    b.addEventListener("click", ()=>{ 
+      let c=getCart(); 
+      const it=c.find(x=>x.id===b.dataset.qty); 
+      const d=Number(b.dataset.d); 
+      it.qty=Math.max(1,it.qty+d); 
+      it.total=it.unit*it.qty; 
+      saveCart(c); 
+      renderCart(); 
+    })
+  );
+
   recalcTotals();
 }
 
