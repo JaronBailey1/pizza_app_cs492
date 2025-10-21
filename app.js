@@ -1,4 +1,3 @@
-
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 const SEED_MENU = {"categories": [{"id": "specialty", "name": "Specialty Pizzas"}, {"id": "build", "name": "Build Your Own"}, {"id": "sides", "name": "Sides"}], "items": [{"id": "pep-supreme", "name": "The Heavy Hitter", "category": "specialty", "basePrice": 14.0, "sizes": ["Small", "Medium", "Large"], "desc": "Loaded with double pepperoni and mozzarella.", "img": "https://picsum.photos/seed/pep/800/500", "active": true}, {"id": "marg", "name": "Slice of Summer", "category": "specialty", "basePrice": 13.0, "sizes": ["Small", "Medium", "Large"], "desc": "Tomato, fresh mozzarella, basil, olive oil.", "img": "https://picsum.photos/seed/marg/800/500", "active": true}, {"id": "garlic-knots", "name": "Get Twisted", "category": "sides", "basePrice": 6.0, "sizes": [], "desc": "Buttery knots with garlic and herbs.", "img": "https://picsum.photos/seed/knots/800/500", "active": true}], "toppings": [{"id": "pep", "name": "Pepperoni", "price": 1.5, "active": true}, {"id": "sau", "name": "Sausage", "price": 1.5, "active": true}, {"id": "mus", "name": "Mushrooms", "price": 1.0, "active": true}, {"id": "oli", "name": "Olives", "price": 1.0, "active": true}, {"id": "jal", "name": "Jalape\u00f1os", "price": 1.0, "active": true}], "sizeMultipliers": {"Small": 1.0, "Medium": 1.25, "Large": 1.5}, "taxRate": 0.07, "discounts": []};
@@ -43,10 +42,12 @@ function renderCategoryOptions(menu){
   categoryFilter.innerHTML = `<option value="all">All</option>` + menu.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
-function renderMenuList(menu) {
-  const term = (searchInput.value || "").toLowerCase().trim();
+/* -------------------------------------------------
+   UPDATED renderMenuList() 
+------------------------------------------------- */
+function renderMenuList(menu){
+  const term = (searchInput.value||"").toLowerCase().trim();
   const cat = categoryFilter.value || "all";
-
   const filtered = menu.items.filter(i =>
     i.active !== false &&
     (cat === "all" || i.category === cat) &&
@@ -59,11 +60,11 @@ function renderMenuList(menu) {
       <div class="content">
         <h3>${i.name}</h3>
         <p>${i.desc}</p>
-        <div class="price">from $${i.basePrice.toFixed(2)}</div>
+        <div class="price" data-id="${i.id}">from $${i.basePrice.toFixed(2)}</div>
         ${i.sizes?.length ? `
           <label>Size:
             <select data-id="${i.id}" class="sizePick">
-              ${i.sizes.map(s => `<option>${s}</option>`).join("")}
+              ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
             </select>
           </label>` : ``}
         <button class="primary" data-add="${i.id}">Add to Cart</button>
@@ -71,19 +72,21 @@ function renderMenuList(menu) {
     </article>
   `).join("");
 
-  // Update price label when size changes
+  // Update price when size changes
   menuGrid.querySelectorAll(".sizePick").forEach(sel => {
     sel.addEventListener("change", e => {
+      const menuData = getMenu();
       const id = e.target.dataset.id;
-      const item = menu.items.find(i => i.id === id);
+      const item = menuData.items.find(i => i.id === id);
       const size = e.target.value;
-      const mult = menu.sizeMultipliers[size] ?? 1;
+      const mult = menuData.sizeMultipliers[size] ?? 1;
       const newPrice = item.basePrice * mult;
       e.target.closest(".item").querySelector(".price").textContent = `from $${newPrice.toFixed(2)}`;
+      console.log(`Size changed for ${item.name}: ${size} (multiplier ${mult}) => $${newPrice.toFixed(2)}`);
     });
   });
 
-  // Add to cart button handler that respects selected size
+  // Respect selected size when adding to cart
   menuGrid.querySelectorAll("button[data-add]").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.dataset.add;
@@ -92,6 +95,34 @@ function renderMenuList(menu) {
       addPresetToCart(id, selectedSize);
     });
   });
+}
+
+/* -------------------------------------------------
+   UPDATED addPresetToCart()
+------------------------------------------------- */
+function addPresetToCart(itemId, selectedSize = null){
+  const menu = getMenu();
+  const item = menu.items.find(i=>i.id===itemId);
+  const size = selectedSize || item.sizes?.[0] || null;
+  const mult = size ? menu.sizeMultipliers[size] : 1;
+  const price = item.basePrice * mult;
+
+  console.log(`Adding to cart: ${item.name}, size=${size}, base=${item.basePrice}, mult=${mult}, price=${price}`);
+
+  const line = { 
+    id: crypto.randomUUID(), 
+    name:`${item.name}${size ? ` (${size})` : ""}`, 
+    basePrice: item.basePrice,
+    size, 
+    toppings:[], 
+    unit:price, 
+    qty:1, 
+    total:price 
+  };
+  const cart = getCart(); 
+  cart.push(line); 
+  saveCart(cart); 
+  renderCart();
 }
 
 function renderBuilder(menu){
@@ -113,16 +144,6 @@ function recalcTotals(){
   taxTotal.textContent = currency(subtotal * taxRate);
   grandTotal.textContent = currency(subtotal * (1 + taxRate));
   checkoutBtn.disabled = cart.length === 0;
-}
-
-function addPresetToCart(itemId){
-  const menu = getMenu();
-  const item = menu.items.find(i=>i.id===itemId);
-  const size = item.sizes?.[0] || null;
-  const mult = size ? menu.sizeMultipliers[size] : 1;
-  const price = item.basePrice * mult;
-  const line = { id: crypto.randomUUID(), name: `${item.name}${size ? ` (${size})` : ""}`, size, toppings: [], unit: price, qty: 1, total: price };
-  const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
 function addBuildToCart(){
