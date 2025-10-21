@@ -2,26 +2,27 @@ const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
 const SEED_MENU = {
-  "categories": [
-    {"id": "specialty", "name": "Specialty Pizzas"},
-    {"id": "build", "name": "Build Your Own"},
-    {"id": "sides", "name": "Sides"}
+  version: 1, // increment this whenever you update the menu
+  categories: [
+    {id: "specialty", name: "Specialty Pizzas"},
+    {id: "build", name: "Build Your Own"},
+    {id: "sides", name: "Sides"}
   ],
-  "items": [
-    {"id": "pep-supreme", "name": "The Heavy Hitter", "category": "specialty", "basePrice": 14.0, "sizes": ["Small", "Medium", "Large"], "desc": "Loaded with double pepperoni and mozzarella.", "img": "https://picsum.photos/seed/pep/800/500", "active": true},
-    {"id": "marg", "name": "Slice of Summer", "category": "specialty", "basePrice": 13.0, "sizes": ["Small", "Medium", "Large"], "desc": "Tomato, fresh mozzarella, basil, olive oil.", "img": "https://picsum.photos/seed/marg/800/500", "active": true},
-    {"id": "garlic-knots", "name": "Get Twisted", "category": "sides", "basePrice": 6.0, "sizes": [], "desc": "Buttery knots with garlic and herbs.", "img": "https://picsum.photos/seed/knots/800/500", "active": true}
+  items: [
+    {id: "pep-supreme", name: "The Heavy Hitter", category: "specialty", basePrice: 14.0, sizes: ["Small","Medium","Large"], desc: "Loaded with double pepperoni and mozzarella.", img: "https://picsum.photos/seed/pep/800/500", active:true},
+    {id: "marg", name: "Slice of Summer", category: "specialty", basePrice: 13.0, sizes: ["Small","Medium","Large"], desc: "Tomato, fresh mozzarella, basil, olive oil.", img: "https://picsum.photos/seed/marg/800/500", active:true},
+    {id: "garlic-knots", name: "Get Twisted", category: "sides", basePrice: 6.0, sizes: [], desc: "Buttery knots with garlic and herbs.", img: "https://picsum.photos/seed/knots/800/500", active:true}
   ],
-  "toppings": [
-    {"id": "pep", "name": "Pepperoni", "price": 1.5, "active": true},
-    {"id": "sau", "name": "Sausage", "price": 1.5, "active": true},
-    {"id": "mus", "name": "Mushrooms", "price": 1.0, "active": true},
-    {"id": "oli", "name": "Olives", "price": 1.0, "active": true},
-    {"id": "jal", "name": "Jalapeños", "price": 1.0, "active": true}
+  toppings: [
+    {id:"pep", name:"Pepperoni", price:1.5, active:true},
+    {id:"sau", name:"Sausage", price:1.5, active:true},
+    {id:"mus", name:"Mushrooms", price:1.0, active:true},
+    {id:"oli", name:"Olives", price:1.0, active:true},
+    {id:"jal", name:"Jalapeños", price:1.0, active:true}
   ],
-  "sizeMultipliers": {"Small": 1.0, "Medium": 1.25, "Large": 1.5},
-  "taxRate": 0.07,
-  "discounts": []
+  sizeMultipliers: {Small:1.0, Medium:1.25, Large:1.5},
+  taxRate: 0.07,
+  discounts: []
 };
 
 function currency(n) { return `$${n.toFixed(2)}`; }
@@ -43,10 +44,20 @@ async function fetchMenuJson() {
   }
 }
 
+// Load menu with version check
 async function loadMenu() {
+  const cached = getMenu();
+  if (cached && cached.version === SEED_MENU.version) {
+    return cached;
+  }
+
   const file = await fetchMenuJson();
-  if (file) { saveMenu(file); return file; }
-  saveMenu(SEED_MENU);
+  if (file) { 
+    saveMenu(file); 
+    return file; 
+  }
+
+  saveMenu(SEED_MENU); 
   return SEED_MENU;
 }
 
@@ -270,10 +281,6 @@ function wire(){
 ------------------------------------------------- */
 async function boot(){
   cacheEls();
-
-  // Clear cached menu to ensure updated names
-  localStorage.removeItem(LS_MENU_KEY);
-
   const menu = await loadMenu();
   renderCategoryOptions(menu);
   renderMenuList(menu);
