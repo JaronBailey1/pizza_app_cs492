@@ -1,3 +1,5 @@
+
+
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
@@ -68,7 +70,7 @@ const SEED_MENU = {
   taxRate: 0.07
 };
 
-function currency(n) { return `$${n.toFixed(2)}`; }
+function currency(n) { return `$${Number(n||0).toFixed(2)}`; }
 const $ = (id) => document.getElementById(id);
 
 function getCart() { try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } catch { return []; } }
@@ -105,15 +107,17 @@ function cacheEls(){
 }
 
 function renderCategoryOptions(menu){
+  // If categoryFilter isn't present on the page, skip - but menu list should still render
   if (!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>` + (menu.categories || []).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
 function renderMenuList(menu){
-  if (!menuGrid) return;
+  if (!menuGrid) return; // nothing to render into
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value || "all";
-  const filtered = (menu.items || []).filter(i =>
+  const items = (menu.items || []);
+  const filtered = items.filter(i =>
     i.active !== false &&
     (cat === "all" || i.category === cat) &&
     (i.name.toLowerCase().includes(term) || (i.desc || "").toLowerCase().includes(term))
@@ -136,7 +140,10 @@ function renderMenuList(menu){
     </article>
   `).join("");
 
-  menuGrid.querySelectorAll("button[data-add]").forEach(btn=> btn.addEventListener("click", () => addPresetToCart(btn.dataset.add)));
+  // wire add buttons inside the menu grid
+  menuGrid.querySelectorAll("button[data-add]").forEach(btn=> {
+    btn.addEventListener("click", () => addPresetToCart(btn.dataset.add));
+  });
 }
 
 function renderBuilder(menu){
@@ -145,12 +152,12 @@ function renderBuilder(menu){
   baseSelect.innerHTML = bases.map(b => `<option value="${b.id}">${b.name}</option>`).join("");
   sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers || { Small:1 }).map(s => `<option>${s}</option>`).join("");
   toppingsWrap.innerHTML = (menu.toppings || []).filter(t=>t.active!==false).map(t => `
-    <label><input type="checkbox" value="${t.id}" data-price="${t.price}"> ${t.name} (+$${t.price.toFixed(2)})</label>
+    <label><input type="checkbox" value="${t.id}" data-price="${t.price}"> ${t.name} (+$${(t.price||0).toFixed(2)})</label>
   `).join("");
   recalcBuildPrice();
 }
 
-function updateCartCount(){ if (!cartCount) return; cartCount.textContent = getCart().reduce((a,c)=>a+c.qty,0); }
+function updateCartCount(){ if (!cartCount) return; cartCount.textContent = getCart().reduce((a,c)=>a+(c.qty||0),0); }
 function recalcTotals(){
   const menu = getMenu(); const taxRate = menu?.taxRate ?? 0.07;
   const cart = getCart();
@@ -168,22 +175,27 @@ function addPresetToCart(itemId){
   const size = item.sizes?.[0] || null;
   const mult = size ? (menu.sizeMultipliers?.[size] ?? 1) : 1;
   const price = (item.basePrice || 0) * mult;
-  const line = { id: (crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)), name:item.name, size, toppings:[], unit:price, qty:1, total:price };
+  const uid = (crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+  const line = { id: uid, name:item.name, size, toppings:[], unit:price, qty:1, total:price };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
 function addBuildToCart(){
   const menu = getMenu();
-  const baseId = baseSelect.value;
-  const base = (baseId==="plain-cheese") ? {name:"Plain Cheese", basePrice:10.0, sizes:["Small","Medium","Large"]} : (menu.items || []).find(i=>i.id===baseId);
+  // defensive reads
+  const baseId = baseSelect?.value;
+  const base = (baseId === "plain-cheese") ? {name:"Plain Cheese", basePrice:10.0, sizes:["Small","Medium","Large"]} : (menu.items || []).find(i=>i.id===baseId);
   if (!base) return;
-  const size = sizeSelect.value;
+  const size = sizeSelect?.value || "Small";
   const mult = menu.sizeMultipliers?.[size] ?? 1;
-  const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
+  const toppingChecks = [...(toppingsWrap?.querySelectorAll("input[type=checkbox]:checked")||[])];
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0), 0);
-  const unit = (base.basePrice || base.basePrice === 0 ? base.basePrice : (base.basePrice || 0)) * mult + toppingCost;
-  const qty = Math.max(1, Number(qtyInput.value||1));
-  const line = { id: (crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)), name: `${base.name} (${size})`, size, toppings: toppingChecks.map(c=>c.value), unit, qty, total: unit*qty };
+  // simple, safe unit calc
+  const basePrice = Number(base.basePrice || 0);
+  const unit = (basePrice * mult) + toppingCost;
+  const qty = Math.max(1, Number(qtyInput?.value||1));
+  const uid = (crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+  const line = { id: uid, name: `${base.name} (${size})`, size, toppings: toppingChecks.map(c=>c.value), unit, qty, total: unit*qty };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
@@ -229,16 +241,16 @@ function renderCart(){
 }
 
 function recalcBuildPrice(){
-  const menu=getMenu();
-  const baseId=baseSelect?.value;
-  const base=(baseId==="plain-cheese")?{basePrice:10.0}: (menu.items || []).find(i=>i.id===baseId) || {basePrice:10.0};
-  const size=sizeSelect?.value;
-  const mult=menu.sizeMultipliers?.[size] ?? 1;
-  const toppingChecks=[...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
-  const toppingCost=toppingChecks.reduce((s,c)=>s+Number(c.dataset.price||0),0);
-  const unit=(base.basePrice * mult)+toppingCost;
-  const qty=Math.max(1, Number(qtyInput?.value||1));
-  if (estPriceEl) estPriceEl.textContent=currency(unit*qty);
+  const menu = getMenu();
+  const baseId = baseSelect?.value;
+  const base = (baseId === "plain-cheese") ? {basePrice:10.0} : ((menu.items || []).find(i=>i.id===baseId) || {basePrice:10.0});
+  const size = sizeSelect?.value || "Small";
+  const mult = menu.sizeMultipliers?.[size] ?? 1;
+  const toppingChecks = [...(toppingsWrap?.querySelectorAll("input[type=checkbox]:checked")||[])];
+  const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0), 0);
+  const unit = (Number(base.basePrice || 0) * mult) + toppingCost;
+  const qty = Math.max(1, Number(qtyInput?.value||1));
+  if (estPriceEl) estPriceEl.textContent = currency(unit * qty);
 }
 
 // --- Browse-all modal / popup functions ---
@@ -295,6 +307,7 @@ function showBrowseModal(menu){
   ensureBrowseModalDom();
   const content = document.getElementById("browseModalContent");
   if (!menu) menu = getMenu();
+
   // group by categories for nicer display
   const categories = (menu?.categories || []).reduce((acc,c)=>{ acc[c.id] = {...c, items:[]}; return acc; }, {});
   (menu?.items || []).forEach(it => {
@@ -326,7 +339,8 @@ function showBrowseModal(menu){
   // wire add buttons inside modal
   content.querySelectorAll("button[data-add]").forEach(btn=> btn.addEventListener("click", () => {
     addPresetToCart(btn.dataset.add);
-    // Optionally close modal after add: hideBrowseModal();
+    // Optionally keep modal open or close:
+    // hideBrowseModal();
   }));
 
   document.getElementById("browseModalBackdrop").style.display = "flex";
@@ -363,24 +377,18 @@ function wire(){
   $("toppingsWrap")?.addEventListener("change", recalcBuildPrice);
   sizeSelect?.addEventListener("change", recalcBuildPrice);
   qtyInput?.addEventListener("input", recalcBuildPrice);
-  $("cartButton")?.addEventListener("click",()=>{ $("cartDrawer").classList.add("open"); $("cartDrawer").setAttribute("aria-hidden","false"); });
-  $("closeCart")?.addEventListener("click",()=>{ $("cartDrawer").classList.remove("open"); $("cartDrawer").setAttribute("aria-hidden","true"); });
+  $("cartButton")?.addEventListener("click",()=>{ $("cartDrawer")?.classList.add("open"); $("cartDrawer")?.setAttribute("aria-hidden","false"); });
+  $("closeCart")?.addEventListener("click",()=>{ $("cartDrawer")?.classList.remove("open"); $("cartDrawer")?.setAttribute("aria-hidden","true"); });
   $("clearCart")?.addEventListener("click",()=>{ saveCart([]); renderCart(); });
   $("searchInput")?.addEventListener("input", ()=>renderMenuList(getMenu()));
   $("categoryFilter")?.addEventListener("change", ()=>renderMenuList(getMenu()));
-}
-
-// helper: ensure a browse button exists and wire it (called from boot)
-function ensureBrowseButtonOnBoot(){
-  // ensureBrowseButton relies on cached elements being set
-  ensureBrowseButton();
 }
 
 async function boot(){
   cacheEls();
   const menu = await loadMenu();
 
-  // create and wire the browse-all button
+  // create and wire the browse-all button (safe: cacheEls ran)
   ensureBrowseButton();
 
   renderCategoryOptions(menu);
@@ -389,9 +397,9 @@ async function boot(){
   updateCartCount();
   renderCart();
   wire();
+
   // wire checkout nav
   checkoutBtn?.addEventListener("click", () => {
-    // Simple nav to staging payment page
     window.location.href = "./payment.html";
   });
 }
