@@ -57,7 +57,7 @@ function renderMenuList(menu){
       <div class="content">
         <h3>${i.name}</h3>
         <p>${i.desc}</p>
-        <div class="price">from $${i.basePrice.toFixed(2)}</div>
+        <div class="price">$${i.basePrice.toFixed(2)}</div>
         ${i.sizes?.length ? `
           <label>Size:
             <select data-id="${i.id}" class="sizePick">
