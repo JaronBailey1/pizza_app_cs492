@@ -2,7 +2,7 @@ const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
 const SEED_MENU = {
-  version: 1, // Increment to force updates
+  version: 1,
   categories: [
     { id: "specialty", name: "Specialty Pizzas" },
     { id: "build", name: "Build Your Own" },
@@ -33,7 +33,6 @@ function saveCart(c) { localStorage.setItem(LS_CART_KEY, JSON.stringify(c)); upd
 function getMenu() { try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch { return null; } }
 function saveMenu(m) { localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); }
 
-// Always use SEED_MENU and check version
 async function loadMenu() {
   const cached = getMenu();
   if (!cached || cached.version !== SEED_MENU.version) {
@@ -176,7 +175,7 @@ function addBuildToCart(){
   const qty = Math.max(1, Number(qtyInput.value||1));
   const line = { 
     id: crypto.randomUUID(), 
-    name: `${base.name}`, // keep base name
+    name: base.name, 
     size, 
     toppings: toppingChecks.map(c=>c.value), 
     unit, 
@@ -184,6 +183,19 @@ function addBuildToCart(){
     total: unit*qty 
   };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+}
+
+function recalcBuildPrice(){
+  const menu = getMenu();
+  const baseId = baseSelect.value;
+  const base = (baseId==="plain-cheese") ? {basePrice:10.0} : menu.items.find(i=>i.id===baseId);
+  const size = sizeSelect.value;
+  const mult = menu.sizeMultipliers[size] ?? 1;
+  const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
+  const toppingCost = toppingChecks.reduce((s,c)=>s+Number(c.dataset.price||0),0);
+  const unit = (base.basePrice * mult) + toppingCost;
+  const qty = Math.max(1, Number(qtyInput.value||1));
+  estPriceEl.textContent = currency(unit*qty);
 }
 
 function renderCart(){
@@ -206,5 +218,49 @@ function renderCart(){
 
   cartItems.querySelectorAll("button[data-remove]").forEach(b=> 
     b.addEventListener("click", ()=>{ 
-      let c=getCart().filter(x=>x.id!==b.dataset.remove); 
-      save
+      const c=getCart().filter(x=>x.id!==b.dataset.remove); 
+      saveCart(c); 
+      renderCart(); 
+    })
+  );
+
+  cartItems.querySelectorAll("button[data-qty]").forEach(b=> 
+    b.addEventListener("click", ()=>{ 
+      const c=getCart(); 
+      const it=c.find(x=>x.id===b.dataset.qty); 
+      const d=Number(b.dataset.d); 
+      it.qty=Math.max(1,it.qty+d); 
+      it.total=it.unit*it.qty; 
+      saveCart(c); 
+      renderCart(); 
+    })
+  );
+
+  recalcTotals();
+}
+
+function wire(){
+  $("addBuildBtn")?.addEventListener("click", addBuildToCart);
+  $("toppingsWrap")?.addEventListener("change", recalcBuildPrice);
+  sizeSelect?.addEventListener("change", recalcBuildPrice);
+  qtyInput?.addEventListener("input", recalcBuildPrice);
+  $("cartButton")?.addEventListener("click",()=>{ $("cartDrawer").classList.add("open"); $("cartDrawer").setAttribute("aria-hidden","false"); });
+  $("closeCart")?.addEventListener("click",()=>{ $("cartDrawer").classList.remove("open"); $("cartDrawer").setAttribute("aria-hidden","true"); });
+  $("clearCart")?.addEventListener("click",()=>{ saveCart([]); renderCart(); });
+  $("searchInput")?.addEventListener("input", ()=>renderMenuList(getMenu()));
+  $("categoryFilter")?.addEventListener("change", ()=>renderMenuList(getMenu()));
+  checkoutBtn?.addEventListener("click", () => { window.location.href = "./payment.html"; });
+}
+
+async function boot(){
+  cacheEls();
+  const menu = await loadMenu();
+  renderCategoryOptions(menu);
+  renderMenuList(menu);
+  renderBuilder(menu);
+  updateCartCount();
+  renderCart();
+  wire();
+}
+
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
