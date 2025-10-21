@@ -2,27 +2,26 @@ const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
 const SEED_MENU = {
-  version: 1,
-  categories: [
-    { id: "specialty", name: "Specialty Pizzas" },
-    { id: "build", name: "Build Your Own" },
-    { id: "sides", name: "Sides" }
+  "categories": [
+    {"id": "specialty", "name": "Specialty Pizzas"},
+    {"id": "build", "name": "Build Your Own"},
+    {"id": "sides", "name": "Sides"}
   ],
-  items: [
-    { id: "pep-supreme", name: "The Heavy Hitter", category: "specialty", basePrice: 14.0, sizes: ["Small","Medium","Large"], desc: "Loaded with double pepperoni and mozzarella.", img: "https://picsum.photos/seed/pep/800/500", active:true },
-    { id: "marg", name: "Slice of Summer", category: "specialty", basePrice: 13.0, sizes: ["Small","Medium","Large"], desc: "Tomato, fresh mozzarella, basil, olive oil.", img: "https://picsum.photos/seed/marg/800/500", active:true },
-    { id: "garlic-knots", name: "Get Twisted", category: "sides", basePrice: 6.0, sizes: [], desc: "Buttery knots with garlic and herbs.", img: "https://picsum.photos/seed/knots/800/500", active:true }
+  "items": [
+    {"id": "pep-supreme", "name": "The Heavy Hitter", "category": "specialty", "basePrice": 14.0, "sizes": ["Small", "Medium", "Large"], "desc": "Loaded with double pepperoni and mozzarella.", "img": "https://picsum.photos/seed/pep/800/500", "active": true},
+    {"id": "marg", "name": "Slice of Summer", "category": "specialty", "basePrice": 13.0, "sizes": ["Small", "Medium", "Large"], "desc": "Tomato, fresh mozzarella, basil, olive oil.", "img": "https://picsum.photos/seed/marg/800/500", "active": true},
+    {"id": "garlic-knots", "name": "Get Twisted", "category": "sides", "basePrice": 6.0, "sizes": [], "desc": "Buttery knots with garlic and herbs.", "img": "https://picsum.photos/seed/knots/800/500", "active": true}
   ],
-  toppings: [
-    {id:"pep", name:"Pepperoni", price:1.5, active:true},
-    {id:"sau", name:"Sausage", price:1.5, active:true},
-    {id:"mus", name:"Mushrooms", price:1.0, active:true},
-    {id:"oli", name:"Olives", price:1.0, active:true},
-    {id:"jal", name:"Jalapeños", price:1.0, active:true}
+  "toppings": [
+    {"id": "pep", "name": "Pepperoni", "price": 1.5, "active": true},
+    {"id": "sau", "name": "Sausage", "price": 1.5, "active": true},
+    {"id": "mus", "name": "Mushrooms", "price": 1.0, "active": true},
+    {"id": "oli", "name": "Olives", "price": 1.0, "active": true},
+    {"id": "jal", "name": "Jalapeños", "price": 1.0, "active": true}
   ],
-  sizeMultipliers: {Small:1.0, Medium:1.25, Large:1.5},
-  taxRate: 0.07,
-  discounts: []
+  "sizeMultipliers": {"Small": 1.0, "Medium": 1.25, "Large": 1.5},
+  "taxRate": 0.07,
+  "discounts": []
 };
 
 function currency(n) { return `$${n.toFixed(2)}`; }
@@ -33,13 +32,22 @@ function saveCart(c) { localStorage.setItem(LS_CART_KEY, JSON.stringify(c)); upd
 function getMenu() { try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch { return null; } }
 function saveMenu(m) { localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); }
 
-async function loadMenu() {
-  const cached = getMenu();
-  if (!cached || cached.version !== SEED_MENU.version) {
-    saveMenu(SEED_MENU);
-    return SEED_MENU;
+async function fetchMenuJson() {
+  try {
+    const res = await fetch("./data/menu.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (e) {
+    console.warn("menu.json fetch failed; using seed.", e);
+    return null;
   }
-  return cached;
+}
+
+async function loadMenu() {
+  const file = await fetchMenuJson();
+  if (file) { saveMenu(file); return file; }
+  saveMenu(SEED_MENU);
+  return SEED_MENU;
 }
 
 // Cached elements
@@ -58,6 +66,9 @@ function renderCategoryOptions(menu){
   categoryFilter.innerHTML = `<option value="all">All</option>` + menu.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
+/* -------------------------------------------------
+   renderMenuList()
+------------------------------------------------- */
 function renderMenuList(menu){
   const term = (searchInput.value||"").toLowerCase().trim();
   const cat = categoryFilter.value || "all";
@@ -113,6 +124,9 @@ function renderMenuList(menu){
   });
 }
 
+/* -------------------------------------------------
+   addPresetToCart()
+------------------------------------------------- */
 function addPresetToCart(itemId, selectedSize = null){
   const menu = getMenu();
   const item = menu.items.find(i=>i.id===itemId);
@@ -136,6 +150,9 @@ function addPresetToCart(itemId, selectedSize = null){
   renderCart();
 }
 
+/* -------------------------------------------------
+   renderBuilder()
+------------------------------------------------- */
 function renderBuilder(menu){
   const bases = [
     {id:"plain-cheese", name:"Plain Cheese", basePrice:10.0, sizes:["Small","Medium","Large"], active:true},
@@ -150,11 +167,13 @@ function renderBuilder(menu){
   recalcBuildPrice();
 }
 
+/* -------------------------------------------------
+   Cart & Pricing functions
+------------------------------------------------- */
 function updateCartCount(){ cartCount.textContent = getCart().reduce((a,c)=>a+c.qty,0); }
 
 function recalcTotals(){
-  const menu = getMenu(); 
-  const taxRate = menu?.taxRate ?? 0.07;
+  const menu = getMenu(); const taxRate = menu?.taxRate ?? 0.07;
   const cart = getCart();
   const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
   subTotal.textContent = currency(subtotal);
@@ -173,29 +192,8 @@ function addBuildToCart(){
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0), 0);
   const unit = (base.basePrice * mult) + toppingCost;
   const qty = Math.max(1, Number(qtyInput.value||1));
-  const line = { 
-    id: crypto.randomUUID(), 
-    name: base.name, 
-    size, 
-    toppings: toppingChecks.map(c=>c.value), 
-    unit, 
-    qty, 
-    total: unit*qty 
-  };
+  const line = { id: crypto.randomUUID(), name: `${base.name} (${size})`, size, toppings: toppingChecks.map(c=>c.value), unit, qty, total: unit*qty };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
-}
-
-function recalcBuildPrice(){
-  const menu = getMenu();
-  const baseId = baseSelect.value;
-  const base = (baseId==="plain-cheese") ? {basePrice:10.0} : menu.items.find(i=>i.id===baseId);
-  const size = sizeSelect.value;
-  const mult = menu.sizeMultipliers[size] ?? 1;
-  const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
-  const toppingCost = toppingChecks.reduce((s,c)=>s+Number(c.dataset.price||0),0);
-  const unit = (base.basePrice * mult) + toppingCost;
-  const qty = Math.max(1, Number(qtyInput.value||1));
-  estPriceEl.textContent = currency(unit*qty);
 }
 
 function renderCart(){
@@ -218,7 +216,7 @@ function renderCart(){
 
   cartItems.querySelectorAll("button[data-remove]").forEach(b=> 
     b.addEventListener("click", ()=>{ 
-      const c=getCart().filter(x=>x.id!==b.dataset.remove); 
+      let c=getCart().filter(x=>x.id!==b.dataset.remove); 
       saveCart(c); 
       renderCart(); 
     })
@@ -226,7 +224,7 @@ function renderCart(){
 
   cartItems.querySelectorAll("button[data-qty]").forEach(b=> 
     b.addEventListener("click", ()=>{ 
-      const c=getCart(); 
+      let c=getCart(); 
       const it=c.find(x=>x.id===b.dataset.qty); 
       const d=Number(b.dataset.d); 
       it.qty=Math.max(1,it.qty+d); 
@@ -239,6 +237,22 @@ function renderCart(){
   recalcTotals();
 }
 
+function recalcBuildPrice(){
+  const menu=getMenu();
+  const baseId=baseSelect.value;
+  const base=(baseId==="plain-cheese")?{basePrice:10.0}:menu.items.find(i=>i.id===baseId);
+  const size=sizeSelect.value;
+  const mult=menu.sizeMultipliers[size] ?? 1;
+  const toppingChecks=[...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
+  const toppingCost=toppingChecks.reduce((s,c)=>s+Number(c.dataset.price||0),0);
+  const unit=(base.basePrice*mult)+toppingCost;
+  const qty=Math.max(1, Number(qtyInput.value||1));
+  estPriceEl.textContent=currency(unit*qty);
+}
+
+/* -------------------------------------------------
+   Event wiring
+------------------------------------------------- */
 function wire(){
   $("addBuildBtn")?.addEventListener("click", addBuildToCart);
   $("toppingsWrap")?.addEventListener("change", recalcBuildPrice);
@@ -249,11 +263,17 @@ function wire(){
   $("clearCart")?.addEventListener("click",()=>{ saveCart([]); renderCart(); });
   $("searchInput")?.addEventListener("input", ()=>renderMenuList(getMenu()));
   $("categoryFilter")?.addEventListener("change", ()=>renderMenuList(getMenu()));
-  checkoutBtn?.addEventListener("click", () => { window.location.href = "./payment.html"; });
 }
 
+/* -------------------------------------------------
+   Boot
+------------------------------------------------- */
 async function boot(){
   cacheEls();
+
+  // Clear cached menu to ensure updated names
+  localStorage.removeItem(LS_MENU_KEY);
+
   const menu = await loadMenu();
   renderCategoryOptions(menu);
   renderMenuList(menu);
@@ -261,6 +281,10 @@ async function boot(){
   updateCartCount();
   renderCart();
   wire();
+
+  checkoutBtn?.addEventListener("click", () => {
+    window.location.href = "./payment.html";
+  });
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
