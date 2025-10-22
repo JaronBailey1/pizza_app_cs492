@@ -1,7 +1,6 @@
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
-// SEED_MENU: used if data/menu.json can't be fetched or nothing in localStorage.
 const SEED_MENU = {
   categories: [
     { id: "specialty", name: "Specialty Pizzas" },
@@ -9,45 +8,10 @@ const SEED_MENU = {
     { id: "sides", name: "Sides" }
   ],
   items: [
-    {
-      id: "pep-supreme",
-      name: "Heavy Hitter",
-      desc: "A classic pepperoni pizza with extra cheese and baked to perfection.",
-      img: "images/pep-supreme.jpg",
-      basePrice: 12.99,
-      category: "specialty",
-      sizes: ["Small", "Medium", "Large"],
-      active: true
-    },
-    {
-      id: "margherita",
-      name: "Slice of Summer",
-      desc: "Fresh mozzarella, basil, and tomato — a light and bright classic.",
-      img: "images/margherita.jpg",
-      basePrice: 11.5,
-      category: "specialty",
-      sizes: ["Small", "Medium", "Large"],
-      active: true
-    },
-    {
-      id: "veggie-delight",
-      name: "Veggie Delight",
-      desc: "Loaded with seasonal vegetables and zesty tomato sauce.",
-      img: "images/veggie.jpg",
-      basePrice: 12.0,
-      category: "specialty",
-      sizes: ["Small", "Medium", "Large"],
-      active: true
-    },
-    {
-      id: "garlic-knots",
-      name: "Get Twised",
-      desc: "Warm garlic knots brushed with herb butter and parmesan.",
-      img: "images/garlic-knots.jpg",
-      basePrice: 4.5,
-      category: "sides",
-      active: true
-    }
+    { id: "pep-supreme", name: "Heavy Hitter", desc: "A classic pepperoni pizza with extra cheese and baked to perfection.", img: "images/pep-supreme.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, and tomato — a light and bright classic.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "veggie-delight", name: "Veggie Delight", desc: "Loaded with seasonal vegetables and zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12.0, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "garlic-knots", name: "Get Twised", desc: "Warm garlic knots brushed with herb butter and parmesan.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true }
   ],
   toppings: [
     { id: "mozzarella", name: "Mozzarella", price: 1.0, active: true },
@@ -56,11 +20,7 @@ const SEED_MENU = {
     { id: "onions", name: "Onions", price: 0.6, active: true },
     { id: "olives", name: "Olives", price: 0.8, active: true }
   ],
-  sizeMultipliers: {
-    Small: 1,
-    Medium: 1.35,
-    Large: 1.75
-  },
+  sizeMultipliers: { Small:1, Medium:1.35, Large:1.75 },
   taxRate: 0.07
 };
 
@@ -115,13 +75,14 @@ function renderMenuList(menu){
     (cat === "all" || i.category === cat) &&
     (i.name.toLowerCase().includes(term) || (i.desc || "").toLowerCase().includes(term))
   );
+
   menuGrid.innerHTML = filtered.map(i => `
-    <article class="item">
+    <article class="item" data-id="${i.id}">
       <img src="${i.img || 'images/placeholder.png'}" alt="${i.name}" />
       <div class="content">
         <h3>${i.name}</h3>
         <p>${i.desc || ''}</p>
-        <div class="price">from $${(i.basePrice || 0).toFixed(2)}</div>
+        <div class="price">from ${currency(i.basePrice || 0)}</div>
         ${i.sizes?.length ? `
           <label>Size:
             <select data-id="${i.id}" class="sizePick">
@@ -133,8 +94,28 @@ function renderMenuList(menu){
     </article>
   `).join("");
 
+  // Wire size selects to update the displayed price for that item
+  menuGrid.querySelectorAll("select.sizePick").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const itemId = sel.dataset.id;
+      const item = (menu.items || []).find(x=>x.id === itemId);
+      const size = sel.value;
+      const mult = (menu.sizeMultipliers?.[size]) ?? 1;
+      const priceEl = sel.closest('.item')?.querySelector('.price');
+      if (priceEl && item) priceEl.textContent = `from ${currency((item.basePrice||0) * mult)}`;
+    });
+    // initialize displayed price
+    sel.dispatchEvent(new Event('change'));
+  });
+
+  // Add button reads the current selected size for that item
   menuGrid.querySelectorAll("button[data-add]").forEach(btn=> {
-    btn.addEventListener("click", () => addPresetToCart(btn.dataset.add));
+    btn.addEventListener("click", () => {
+      const itemId = btn.dataset.add;
+      const sel = menuGrid.querySelector(`select.sizePick[data-id="${itemId}"]`);
+      const size = sel?.value || ((menu.items||[]).find(i=>i.id===itemId)?.sizes?.[0]) || null;
+      addPresetToCart(itemId, size);
+    });
   });
 }
 
@@ -160,15 +141,16 @@ function recalcTotals(){
   if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
 }
 
-function addPresetToCart(itemId){
+function addPresetToCart(itemId, chosenSize){
   const menu = getMenu();
   const item = (menu.items || []).find(i=>i.id===itemId);
   if (!item) return;
-  const size = item.sizes?.[0] || null;
+  const size = chosenSize || item.sizes?.[0] || null;
   const mult = size ? (menu.sizeMultipliers?.[size] ?? 1) : 1;
   const price = (item.basePrice || 0) * mult;
   const uid = (crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
-  const line = { id: uid, name:item.name, size, toppings:[], unit:price, qty:1, total:price };
+  const lineName = size ? `${item.name} (${size})` : item.name;
+  const line = { id: uid, name: lineName, size, toppings:[], unit:price, qty:1, total:price };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
@@ -196,6 +178,7 @@ function renderCart(){
     <div class="cart-row" data-id="${i.id}">
       <div>
         <div><strong>${i.name}</strong> × ${i.qty}</div>
+        ${i.size ? `<div><small>Size: ${i.size}</small></div>` : ''}
         ${i.toppings?.length ? `<small>${i.toppings.join(", ")}</small>` : ``}
         <small>${currency(i.unit)} each</small>
       </div>
@@ -241,124 +224,6 @@ function recalcBuildPrice(){
   if (estPriceEl) estPriceEl.textContent = currency(unit * qty);
 }
 
-// --- Browse-all modal / popup functions ---
-function ensureBrowseModalStyles(){
-  if (document.getElementById("browseModalStyles")) return;
-  const s = document.createElement("style");
-  s.id = "browseModalStyles";
-  s.innerText = `
-  .browse-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:10000; }
-  .browse-modal { background: #fff; width: 90%; max-width:900px; max-height:80vh; overflow:auto; border-radius:8px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.3); position:relative; }
-  .browse-modal h2{margin:0 0 8px 0;}
-  .browse-modal .close { position:absolute; right:20px; top:14px; background:transparent; border:none; font-size:20px; cursor:pointer; }
-  .browse-list { display:flex; flex-direction:column; gap:12px; }
-  .browse-item { display:flex; gap:12px; align-items:flex-start; border-bottom:1px solid #eee; padding-bottom:8px; }
-  .browse-item img { width:88px; height:64px; object-fit:cover; border-radius:6px; }
-  .browse-item .meta { flex:1; }
-  .browse-item .meta h3{margin:0 0 6px 0;}
-  `;
-  document.head.appendChild(s);
-}
-
-function ensureBrowseModalDom(){
-  if (document.getElementById("browseModalBackdrop")) return;
-  ensureBrowseModalStyles();
-
-  const backdrop = document.createElement("div");
-  backdrop.id = "browseModalBackdrop";
-  backdrop.className = "browse-modal-backdrop";
-  backdrop.style.display = "none";
-
-  const modal = document.createElement("div");
-  modal.className = "browse-modal";
-  modal.setAttribute("role", "dialog");
-  modal.setAttribute("aria-modal", "true");
-  modal.innerHTML = `
-    <button class="close" id="browseModalClose" aria-label="Close">&times;</button>
-    <h2>Full Menu</h2>
-    <div id="browseModalContent" class="browse-list" tabindex="0"></div>
-  `;
-
-  backdrop.appendChild(modal);
-  document.body.appendChild(backdrop);
-
-  document.getElementById("browseModalClose").addEventListener("click", hideBrowseModal);
-  backdrop.addEventListener("click", (e)=> { if (e.target === backdrop) hideBrowseModal(); });
-  document.addEventListener("keydown", (e)=> { if (e.key === "Escape") hideBrowseModal(); });
-}
-
-function showBrowseModal(menu){
-  ensureBrowseModalDom();
-  const content = document.getElementById("browseModalContent");
-  if (!menu) menu = getMenu();
-
-  const categories = (menu?.categories || []).reduce((acc,c)=>{ acc[c.id] = {...c, items:[]}; return acc; }, {});
-  (menu?.items || []).forEach(it => {
-    if (!categories[it.category]) {
-      categories[it.category] = { id: it.category, name: it.category, items: [] };
-    }
-    categories[it.category].items.push(it);
-  });
-
-  const html = Object.values(categories).map(cat => {
-    const items = (cat.items || []).filter(i=> i.active !== false).map(i => `
-      <div class="browse-item">
-        <img src="${i.img || 'images/placeholder.png'}" alt="${i.name}" />
-        <div class="meta">
-          <h3>${i.name}</h3>
-          <div class="desc">${i.desc || ''}</div>
-          <div class="price">from ${currency(i.basePrice || 0)}</div>
-        </div>
-        <div>
-          <button class="primary" data-add="${i.id}">Add</button>
-        </div>
-      </div>
-    `).join("");
-    return `<h3 style="margin-top:12px">${cat.name}</h3>${items}`;
-  }).join("");
-
-  content.innerHTML = html || "<div>No menu items found.</div>";
-
-  content.querySelectorAll("button[data-add]").forEach(btn=> btn.addEventListener("click", () => {
-    addPresetToCart(btn.dataset.add);
-  }));
-
-  document.getElementById("browseModalBackdrop").style.display = "flex";
-}
-
-function hideBrowseModal(){
-  const b = document.getElementById("browseModalBackdrop");
-  if (b) b.style.display = "none";
-}
-
-function ensureBrowseButton(){
-  // If the browse button already exists in the DOM (e.g. placed in index.html), keep that element.
-  // Whether we created it or it already existed, ensure we attach the click handler once.
-  let btn = $("browseAllBtn");
-  if (!btn) {
-    btn = document.createElement("button");
-    btn.id = "browseAllBtn";
-    btn.className = "secondary";
-    btn.innerText = "Browse All";
-    if (categoryFilter && categoryFilter.parentNode) {
-      categoryFilter.parentNode.insertBefore(btn, categoryFilter.nextSibling);
-    } else if (menuGrid && menuGrid.parentNode) {
-      menuGrid.parentNode.insertBefore(btn, menuGrid);
-    } else {
-      document.body.insertBefore(btn, document.body.firstChild);
-    }
-  }
-
-  // Attach the click handler only once (guard with dataset flag)
-  if (!btn.dataset.browseWired) {
-    btn.addEventListener("click", async ()=>{
-      const menu = await loadMenu();
-      showBrowseModal(menu);
-    });
-    btn.dataset.browseWired = "1";
-  }
-}
-
 function wire(){
   $("addBuildBtn")?.addEventListener("click", addBuildToCart);
   $("toppingsWrap")?.addEventListener("change", recalcBuildPrice);
@@ -375,8 +240,7 @@ async function boot(){
   cacheEls();
   const menu = await loadMenu();
 
-  // create and wire the browse-all button (safe: cacheEls ran)
-  ensureBrowseButton();
+  // Browse-all removed — no browse button wiring here
 
   renderCategoryOptions(menu);
   renderMenuList(menu);
