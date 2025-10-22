@@ -16,7 +16,7 @@ const SEED_MENU = {
     {
       id: "pep-supreme",
       name: "Heavy Hitter",
-      desc: "A classic pepperoni pizza with extra cheese and baked to perfection.",
+      desc: "A double pepperoni pizza with extra cheese and baked to perfection.",
       img: "images/pep-supreme.jpg",
       basePrice: 12.99,
       category: "specialty",
