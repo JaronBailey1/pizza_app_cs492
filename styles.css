@@ -1,12 +1,4 @@
 :root {
-  /* Pizza-inspired palette:
-     --bg: warm crust/beige,
-     --surface: soft cream for cards,
-     --muted: subdued brown/gray,
-     --text: dark wood/charcoal,
-     --brand: tomato/red,
-     --brand-ink: pale cheese/crust for contrast,
-     --border: warm tan */
   --bg: #fff6ee;          /* warm crust background */
   --surface: #fffdfa;     /* card surface */
   --muted: #7a6552;       /* muted brown */
