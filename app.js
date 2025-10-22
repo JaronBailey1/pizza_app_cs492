@@ -37,10 +37,7 @@ async function fetchMenuJson() {
     const res = await fetch("./data/menu.json", { cache: "no-store" });
     if(!res.ok) throw new Error("HTTP "+res.status);
     return await res.json();
-  } catch(e) {
-    console.warn("menu.json fetch failed; using seed.", e);
-    return null;
-  }
+  } catch(e) { console.warn("menu.json fetch failed; using seed.", e); return null; }
 }
 
 async function loadMenu() {
@@ -51,7 +48,7 @@ async function loadMenu() {
   saveMenu(SEED_MENU); return SEED_MENU;
 }
 
-// Cached DOM elements
+// DOM elements
 let menuGrid, categoryFilter, searchInput, baseSelect, sizeSelect, toppingsWrap, qtyInput, estPriceEl;
 let cartButton, cartDrawer, closeCart, cartItems, subTotal, taxTotal, grandTotal, checkoutBtn, clearCart, cartCount;
 
@@ -64,11 +61,13 @@ function cacheEls(){
 }
 
 function renderCategoryOptions(menu){
-  categoryFilter.innerHTML = `<option value="all">All</option>` + 
+  if(!categoryFilter) return;
+  categoryFilter.innerHTML = `<option value="all">All</option>` +
     (menu.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
 }
 
 function renderMenuList(menu){
+  if(!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value||"all";
   const items = (menu.items||[]).filter(i=>
@@ -101,7 +100,7 @@ function renderMenuList(menu){
       const item = (menu.items||[]).find(x=>x.id===itemId);
       const size = sel.value;
       const mult = menu.sizeMultipliers?.[size]??1;
-      const priceEl = sel.closest(".item").querySelector(".price");
+      const priceEl = sel.closest(".item")?.querySelector(".price");
       if(priceEl && item) priceEl.textContent = currency((item.basePrice||0)*mult);
     });
     sel.dispatchEvent(new Event("change"));
@@ -111,13 +110,14 @@ function renderMenuList(menu){
     btn.addEventListener("click",()=>{
       const id = btn.dataset.add;
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
-      const size = sel?.value||"Small";
+      const size = sel?.value || "Small";
       addPresetToCart(id,size);
     });
   });
 }
 
 function renderBuilder(menu){
+  if(!baseSelect) return;
   baseSelect.innerHTML = [{id:"plain-cheese",name:"Plain Cheese",basePrice:10,sizes:["Small","Medium","Large"],active:true},
     ...(menu.items||[]).filter(i=>i.category==="specialty")]
     .map(b=>`<option value="${b.id}">${b.name}</option>`).join("");
@@ -128,18 +128,20 @@ function renderBuilder(menu){
 }
 
 function updateCartCount(){
+  if(!cartCount) return;
   cartCount.textContent = getCart().reduce((a,c)=>a+(c.qty||0),0);
 }
 
 function recalcTotals(){
-  const menu = getMenu(); 
+  if(!subTotal || !taxTotal || !grandTotal) return;
+  const menu = getMenu();
   const taxRate = menu?.taxRate??0.07;
   const cart = getCart();
   const subtotal = cart.reduce((sum,item)=>sum+(item.total||0),0);
   subTotal.textContent = currency(subtotal);
   taxTotal.textContent = currency(subtotal*taxRate);
   grandTotal.textContent = currency(subtotal*(1+taxRate));
-  checkoutBtn.disabled = cart.length===0;
+  if(checkoutBtn) checkoutBtn.disabled = cart.length===0;
 }
 
 function addPresetToCart(id,size){
@@ -148,7 +150,7 @@ function addPresetToCart(id,size){
   if(!item) return;
   const mult = menu.sizeMultipliers?.[size]??1;
   const unit = (item.basePrice||0)*mult;
-  const line = { id: crypto.randomUUID(), name: `${item.name} (${size})`, size, qty:1, unit, total:unit, toppings:[] };
+  const line = { id: crypto.randomUUID(), name:`${item.name} (${size})`, size, qty:1, unit, total:unit, toppings:[] };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
@@ -160,14 +162,15 @@ function addBuildToCart(){
   const mult = menu.sizeMultipliers?.[size]??1;
   const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0),0);
-  const unit = (base.basePrice*mult)+toppingCost;
   const qty = Math.max(1, Number(qtyInput.value||1));
-  const line = { id: crypto.randomUUID(), name:`${base.name} (${size})`, size, qty, unit, total:unit*qty, toppings: toppingChecks.map(c=>c.value) };
+  const unit = (base.basePrice*mult)+toppingCost;
+  const line = { id: crypto.randomUUID(), name:`${base.name} (${size})`, size, qty, unit, total:unit*qty, toppings:toppingChecks.map(c=>c.value) };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
 function renderCart(){
   const cart = getCart();
+  if(!cartItems) return;
   cartItems.innerHTML = cart.map(i=>`
     <div class="cart-row" data-id="${i.id}">
       <div>
@@ -205,33 +208,26 @@ function renderCart(){
 function recalcBuildPrice(){
   const menu = getMenu();
   const baseId = baseSelect.value;
-  const base = baseId==="plain-cheese" ? {basePrice:10} : menu.items.find(i=>i.id===baseId)||{basePrice:10};
+  const base = baseId==="plain-cheese" ? {basePrice:10} : menu.items.find(i=>i.id===baseId)||{basePrice:10, name:"Plain Cheese"};
   const size = sizeSelect.value||"Small";
   const mult = menu.sizeMultipliers?.[size]??1;
   const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0),0);
-  const unit = base.basePrice*mult + toppingCost;
   const qty = Math.max(1, Number(qtyInput.value||1));
-  estPriceEl.textContent = currency(unit*qty);
+  if(estPriceEl) estPriceEl.textContent = currency((base.basePrice*mult + toppingCost)*qty);
 }
 
 function wire(){
-  $("addBuildBtn").addEventListener("click", addBuildToCart);
-  toppingsWrap.addEventListener("change", recalcBuildPrice);
-  sizeSelect.addEventListener("change", recalcBuildPrice);
-  qtyInput.addEventListener("input", recalcBuildPrice);
+  $("addBuildBtn")?.addEventListener("click", addBuildToCart);
+  toppingsWrap?.addEventListener("change", recalcBuildPrice);
+  sizeSelect?.addEventListener("change", recalcBuildPrice);
+  qtyInput?.addEventListener("input", recalcBuildPrice);
 
-  cartButton.addEventListener("click",()=>{
-    cartDrawer.classList.add("open");
-    cartDrawer.setAttribute("aria-hidden","false");
-  });
-  closeCart.addEventListener("click",()=>{
-    cartDrawer.classList.remove("open");
-    cartDrawer.setAttribute("aria-hidden","true");
-  });
-  clearCart.addEventListener("click",()=>{ saveCart([]); renderCart(); });
-  searchInput.addEventListener("input",()=>renderMenuList(getMenu()));
-  categoryFilter.addEventListener("change",()=>renderMenuList(getMenu()));
+  cartButton?.addEventListener("click",()=>{ cartDrawer?.classList.add("open"); cartDrawer?.setAttribute("aria-hidden","false"); });
+  closeCart?.addEventListener("click",()=>{ cartDrawer?.classList.remove("open"); cartDrawer?.setAttribute("aria-hidden","true"); });
+  clearCart?.addEventListener("click",()=>{ saveCart([]); renderCart(); });
+  searchInput?.addEventListener("input",()=>renderMenuList(getMenu()));
+  categoryFilter?.addEventListener("change",()=>renderMenuList(getMenu()));
 }
 
 async function boot(){
@@ -243,7 +239,7 @@ async function boot(){
   updateCartCount();
   renderCart();
   wire();
-  checkoutBtn.addEventListener("click",()=>window.location.href="./payment.html");
+  checkoutBtn?.addEventListener("click",()=>window.location.href="./payment.html");
 }
 
 document.readyState==="loading"?document.addEventListener("DOMContentLoaded",boot):boot();
