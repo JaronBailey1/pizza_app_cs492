@@ -11,7 +11,9 @@ const SEED_MENU = {
     { id: "pep-supreme", name: "Heavy Hitter", desc: "A classic pepperoni pizza with extra cheese and baked to perfection.", img: "images/pep-supreme.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, and tomato — a light and bright classic.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Loaded with seasonal vegetables and zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12.0, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter and parmesan.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true }
+    { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter and parmesan.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
+    { id: "soda", name: "Fizz Pop", desc: "Refreshing soda to wash down your slice.", img: "images/soda.jpg", basePrice: 2.5, category: "sides", active: true },
+    { id: "wings", name: "Wing It!", desc: "Spicy buffalo wings.", img: "images/wings.jpg", basePrice: 6.5, category: "sides", active: true }
   ],
   toppings: [
     { id: "mozzarella", name: "Mozzarella", price: 1.0, active: true },
@@ -152,6 +154,10 @@ function addPresetToCart(id,size){
   const unit = (item.basePrice||0)*mult;
   const line = { id: crypto.randomUUID(), name:`${item.name} (${size})`, size, qty:1, unit, total:unit, toppings:[] };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+
+  // Auto-open cart
+  cartDrawer?.classList.add("open");
+  cartDrawer?.setAttribute("aria-hidden","false");
 }
 
 function addBuildToCart(){
@@ -166,6 +172,10 @@ function addBuildToCart(){
   const unit = (base.basePrice*mult)+toppingCost;
   const line = { id: crypto.randomUUID(), name:`${base.name} (${size})`, size, qty, unit, total:unit*qty, toppings:toppingChecks.map(c=>c.value) };
   const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+
+  // Auto-open cart
+  cartDrawer?.classList.add("open");
+  cartDrawer?.setAttribute("aria-hidden","false");
 }
 
 function renderCart(){
