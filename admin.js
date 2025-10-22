@@ -1,10 +1,15 @@
-
 const LS_MENU_KEY = "pizza.menu";
 
-function getMenu(){ try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch { return null; } }
-function saveMenu(m){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); }
+function getMenu() { 
+  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } 
+  catch { return null; } 
+}
+function saveMenu(m) { 
+  localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); 
+}
 
-async function ensureMenu(){
+// Ensure menu exists in localStorage
+async function ensureMenu() {
   let m = getMenu();
   if (m) return m;
   try {
@@ -18,6 +23,7 @@ async function ensureMenu(){
   return m;
 }
 
+// DOM elements
 const adminMenuTable = document.getElementById("adminMenuTable");
 const adminToppings = document.getElementById("adminToppings");
 const addItemBtn = document.getElementById("addItemBtn");
@@ -25,9 +31,13 @@ const saveMenuBtn = document.getElementById("saveMenuBtn");
 const taxRateInput = document.getElementById("taxRateInput");
 const sizeMultWrap = document.getElementById("sizeMultWrap");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+const refreshMenuBtn = document.getElementById("refreshMenuBtn");
 
+// Render admin table & settings
 function renderAdmin(){
   const menu = getMenu();
+  
+  // Items table
   adminMenuTable.innerHTML = `
     <div class="admin-row" style="font-weight:700;">
       <div>Name</div><div>Base $</div><div>Category</div><div>Active</div><div></div>
@@ -42,6 +52,8 @@ function renderAdmin(){
       </div>
     `).join("")}
   `;
+
+  // Toppings table
   adminToppings.innerHTML = `
     <div class="admin-row" style="font-weight:700; grid-template-columns: 1fr 100px 90px 60px;">
       <div>Name</div><div>Price</div><div>Active</div><div></div>
@@ -55,7 +67,11 @@ function renderAdmin(){
       </div>
     `).join("")}
   `;
+
+  // Tax rate
   taxRateInput.value = menu.taxRate ?? 0.07;
+
+  // Size multipliers
   sizeMultWrap.innerHTML = Object.entries(menu.sizeMultipliers).map(([sz,val])=>`
     <div style="display:flex; gap:8px; align-items:center; margin:6px 0;">
       <label style="width:80px;">${sz}</label>
@@ -63,6 +79,7 @@ function renderAdmin(){
     </div>
   `).join("");
 
+  // Bind events for items
   adminMenuTable.querySelectorAll("input[data-i]").forEach(input=>{
     input.addEventListener("input", ()=>{
       const m = getMenu();
@@ -75,13 +92,13 @@ function renderAdmin(){
       saveMenu(m);
     });
   });
-
   adminMenuTable.querySelectorAll("button[data-del]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const m = getMenu(); m.items.splice(Number(btn.dataset.del),1); saveMenu(m); renderAdmin();
     });
   });
 
+  // Bind events for toppings
   adminToppings.querySelectorAll("input[data-t]").forEach(input=>{
     input.addEventListener("input", ()=>{
       const m = getMenu();
@@ -94,7 +111,6 @@ function renderAdmin(){
       saveMenu(m);
     });
   });
-
   adminToppings.querySelectorAll("button[data-delt]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const m = getMenu(); m.toppings.splice(Number(btn.dataset.delt),1); saveMenu(m); renderAdmin();
@@ -102,6 +118,7 @@ function renderAdmin(){
   });
 }
 
+// Add new item
 addItemBtn?.addEventListener("click", ()=>{
   const m = getMenu();
   m.items.push({
@@ -117,8 +134,10 @@ addItemBtn?.addEventListener("click", ()=>{
   saveMenu(m); renderAdmin();
 });
 
+// Save menu (alert only)
 saveMenuBtn?.addEventListener("click", ()=> alert("Saved! (stored in your browser)"));
 
+// Save tax and size settings
 saveSettingsBtn?.addEventListener("click", ()=>{
   const m = getMenu();
   m.taxRate = Number(taxRateInput.value || 0.07);
@@ -128,6 +147,15 @@ saveSettingsBtn?.addEventListener("click", ()=>{
   saveMenu(m); alert("Settings saved.");
 });
 
+// Refresh menu for app.js
+refreshMenuBtn?.addEventListener("click", ()=>{
+  const m = getMenu();
+  saveMenu(m); // update localStorage
+  window.dispatchEvent(new Event("storage")); // notify app.js if open
+  alert("Menu refreshed! Open or refresh the main menu page to see updates.");
+});
+
+// Boot
 async function boot(){
   await ensureMenu();
   renderAdmin();
