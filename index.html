@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>P'zzazz Pizza - Staging</title>
+  <title>P'zzazz Pizza</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
@@ -20,7 +20,6 @@
     <nav>
       <a href="#menu">Menu</a>
       <a href="#build">Build Your Own Pizza</a>
-      <!-- Admin removed from header -->
     </nav>
     <button id="cartButton" class="cart-button" aria-label="Open cart">
       🛒 <span id="cartCount">0</span>
@@ -33,7 +32,6 @@
         <h1>Craving Pizza? Order Right Now!</h1>
         <p>Customize your perfect pie or pick a house favorite.</p>
         <p class="subtext">Add sides, check your total, and you’re set.</p>
-        <!-- Browse Menu button removed -->
       </div>
     </section>
 
@@ -88,6 +86,11 @@
         <div>Tax: <span id="taxTotal">$0.00</span></div>
         <div class="grand">Total: <strong id="grandTotal">$0.00</strong></div>
       </div>
+      <div class="delivery">
+        <label>Name: <input id="custName" type="text" placeholder="Your Name"></label>
+        <label>Phone: <input id="custPhone" type="tel" placeholder="(555) 123-4567"></label>
+        <label>Address: <input id="custAddress" type="text" placeholder="Street, City, Zip"></label>
+      </div>
       <button id="checkoutBtn" class="primary" disabled>Checkout</button>
       <button id="clearCart" class="ghost">Clear Cart</button>
     </footer>
@@ -100,8 +103,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const y = document.getElementById('year');
-      if(y) y.textContent = new Date().getFullYear();
+      document.getElementById('year').textContent = new Date().getFullYear();
     });
   </script>
 </body>
