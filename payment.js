@@ -1,4 +1,3 @@
-// payment.js — Staging-only mock checkout (Sprint 1)
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
