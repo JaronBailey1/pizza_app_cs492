@@ -2,10 +2,6 @@ const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
 // SEED_MENU: used if data/menu.json can't be fetched or nothing in localStorage.
-// Includes renamed pizzas:
-//  - "Pepperoni Supreme" -> "Heavy Hitter"
-//  - "Margherita" -> "Slice of Summer"
-//  - "Garlic Knots" -> "Get Twised"
 const SEED_MENU = {
   categories: [
     { id: "specialty", name: "Specialty Pizzas" },
@@ -16,7 +12,7 @@ const SEED_MENU = {
     {
       id: "pep-supreme",
       name: "Heavy Hitter",
-      desc: "A double pepperoni pizza with extra cheese and baked to perfection.",
+      desc: "A classic pepperoni pizza with extra cheese and baked to perfection.",
       img: "images/pep-supreme.jpg",
       basePrice: 12.99,
       category: "specialty",
@@ -336,22 +332,31 @@ function hideBrowseModal(){
 }
 
 function ensureBrowseButton(){
-  if ($("browseAllBtn")) return;
-  const btn = document.createElement("button");
-  btn.id = "browseAllBtn";
-  btn.className = "secondary";
-  btn.innerText = "Browse All";
-  if (categoryFilter && categoryFilter.parentNode) {
-    categoryFilter.parentNode.insertBefore(btn, categoryFilter.nextSibling);
-  } else if (menuGrid && menuGrid.parentNode) {
-    menuGrid.parentNode.insertBefore(btn, menuGrid);
-  } else {
-    document.body.insertBefore(btn, document.body.firstChild);
+  // If the browse button already exists in the DOM (e.g. placed in index.html), keep that element.
+  // Whether we created it or it already existed, ensure we attach the click handler once.
+  let btn = $("browseAllBtn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.id = "browseAllBtn";
+    btn.className = "secondary";
+    btn.innerText = "Browse All";
+    if (categoryFilter && categoryFilter.parentNode) {
+      categoryFilter.parentNode.insertBefore(btn, categoryFilter.nextSibling);
+    } else if (menuGrid && menuGrid.parentNode) {
+      menuGrid.parentNode.insertBefore(btn, menuGrid);
+    } else {
+      document.body.insertBefore(btn, document.body.firstChild);
+    }
   }
-  btn.addEventListener("click", async ()=>{
-    const menu = await loadMenu();
-    showBrowseModal(menu);
-  });
+
+  // Attach the click handler only once (guard with dataset flag)
+  if (!btn.dataset.browseWired) {
+    btn.addEventListener("click", async ()=>{
+      const menu = await loadMenu();
+      showBrowseModal(menu);
+    });
+    btn.dataset.browseWired = "1";
+  }
 }
 
 function wire(){
