@@ -1,31 +1,33 @@
 const LS_MENU_KEY = "pizza.menu";
 
+// Get / set menu in localStorage
 function getMenu(){ 
-  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } 
-  catch { return null; } 
+  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; } 
+  catch { return { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; } 
 }
-function saveMenu(m){ 
-  localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); 
-}
+function saveMenu(menu){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(menu)); }
 
-// Ensure menu exists in localStorage
+// Ensure menu exists (seed if not)
 async function ensureMenu(){
   let m = getMenu();
-  if (m) return m;
-  try {
-    const res = await fetch("./data/menu.json", { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    m = await res.json();
-  } catch (e) {
-    // Seed menu if fetch fails
-    m = { 
-      categories: [], 
-      items: [], 
-      toppings: [], 
-      sizeMultipliers: {Small:1, Medium:1.25, Large:1.5}, 
-      taxRate: 0.07 
-    };
-  }
+  if(m.items.length || m.toppings.length) return m;
+
+  // Seed example menu if none exists
+  m = {
+    categories: ["specialty","build","sides","drinks"],
+    items: [
+      {id:"pep-supreme", name:"Heavy Hitter", basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"images/pep-supreme.jpg"},
+      {id:"margherita", name:"Slice of Summer", basePrice:11.5, category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.", active:true, img:"images/margherita.jpg"},
+      {id:"veggie-delight", name:"Veggie Delight", basePrice:12, category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty tomato sauce.", active:true, img:"images/veggie.jpg"}
+    ],
+    toppings: [
+      {name:"Mozzarella", price:1, active:true},
+      {name:"Pepperoni", price:1.25, active:true},
+      {name:"Mushrooms", price:0.9, active:true}
+    ],
+    sizeMultipliers:{Small:1, Medium:1.35, Large:1.75},
+    taxRate:0.07
+  };
   saveMenu(m);
   return m;
 }
@@ -39,10 +41,11 @@ const taxRateInput = document.getElementById("taxRateInput");
 const sizeMultWrap = document.getElementById("sizeMultWrap");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
+// Render admin interface
 function renderAdmin(){
   const menu = getMenu();
 
-  // Menu Items table
+  // Menu items table
   adminMenuTable.innerHTML = `
     <div class="admin-row header-row">
       <div>Name</div><div>Base $</div><div>Category</div><div>Active</div><div>Actions</div>
@@ -54,8 +57,7 @@ function renderAdmin(){
         <input data-i="${idx}" data-k="category" value="${i.category}">
         <input data-i="${idx}" data-k="active" type="checkbox" ${i.active!==false?'checked':''}>
         <button data-del="${idx}" class="ghost">Del</button>
-      </div>
-    `).join("")}
+      </div>`).join("")}
   `;
 
   // Toppings table
@@ -69,8 +71,7 @@ function renderAdmin(){
         <input data-t="${idx}" data-k="price" type="number" step="0.5" min="0" value="${t.price}">
         <input data-t="${idx}" data-k="active" type="checkbox" ${t.active!==false?'checked':''}>
         <button data-delt="${idx}" class="ghost">Del</button>
-      </div>
-    `).join("")}
+      </div>`).join("")}
   `;
 
   // Settings
@@ -79,82 +80,82 @@ function renderAdmin(){
     <div class="size-row">
       <label>${sz}</label>
       <input data-size="${sz}" type="number" step="0.05" min="0.5" value="${val}">
-    </div>
-  `).join("");
+    </div>`).join("");
 
-  // Menu item inputs
+  // Bind events
+  bindMenuInputs();
+  bindToppingInputs();
+}
+
+// Menu item input bindings
+function bindMenuInputs(){
+  const menu = getMenu();
   adminMenuTable.querySelectorAll("input[data-i]").forEach(input=>{
-    input.addEventListener("input", ()=>{
-      const m = getMenu();
+    input.addEventListener("input",()=>{
       const idx = Number(input.dataset.i);
       const key = input.dataset.k;
       let val = input.type==="checkbox" ? input.checked : input.value;
       if(key==="basePrice") val = Number(val);
       if(key==="active") val = Boolean(val);
-      m.items[idx][key] = val;
-      saveMenu(m);
+      menu.items[idx][key] = val;
+      saveMenu(menu);
     });
   });
-
   adminMenuTable.querySelectorAll("button[data-del]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const m = getMenu(); 
-      m.items.splice(Number(btn.dataset.del),1); 
-      saveMenu(m); 
-      renderAdmin();
+    btn.addEventListener("click",()=>{
+      menu.items.splice(Number(btn.dataset.del),1);
+      saveMenu(menu); renderAdmin();
     });
   });
+}
 
-  // Toppings inputs
+// Topping input bindings
+function bindToppingInputs(){
+  const menu = getMenu();
   adminToppings.querySelectorAll("input[data-t]").forEach(input=>{
-    input.addEventListener("input", ()=>{
-      const m = getMenu();
+    input.addEventListener("input",()=>{
       const idx = Number(input.dataset.t);
       const key = input.dataset.k;
       let val = input.type==="checkbox" ? input.checked : input.value;
       if(key==="price") val = Number(val);
       if(key==="active") val = Boolean(val);
-      m.toppings[idx][key] = val;
-      saveMenu(m);
+      menu.toppings[idx][key] = val;
+      saveMenu(menu);
     });
   });
-
   adminToppings.querySelectorAll("button[data-delt]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const m = getMenu(); 
-      m.toppings.splice(Number(btn.dataset.delt),1); 
-      saveMenu(m); 
-      renderAdmin();
+    btn.addEventListener("click",()=>{
+      menu.toppings.splice(Number(btn.dataset.delt),1);
+      saveMenu(menu); renderAdmin();
     });
   });
 }
 
 // Add new menu item
-addItemBtn?.addEventListener("click", ()=>{
-  const m = getMenu();
-  m.items.push({
-    id: `custom-${crypto.randomUUID().slice(0,6)}`,
-    name: "New Item",
-    category: "specialty",
-    basePrice: 10,
-    sizes: ["Small","Medium","Large"],
-    desc: "",
-    img: "https://picsum.photos/seed/new/800/500",
-    active: true
+addItemBtn?.addEventListener("click",()=>{
+  const menu = getMenu();
+  menu.items.push({
+    id:`custom-${crypto.randomUUID().slice(0,6)}`,
+    name:"New Item",
+    category:"specialty",
+    basePrice:10,
+    sizes:["Small","Medium","Large"],
+    desc:"",
+    img:"https://picsum.photos/seed/new/800/500",
+    active:true
   });
-  saveMenu(m); 
-  renderAdmin();
+  saveMenu(menu); renderAdmin();
 });
 
-saveMenuBtn?.addEventListener("click", ()=> alert("Saved! (stored in your browser)"));
-
-saveSettingsBtn?.addEventListener("click", ()=>{
-  const m = getMenu();
-  m.taxRate = Number(taxRateInput.value || 0.07);
+// Save buttons
+saveMenuBtn?.addEventListener("click",()=>alert("Menu saved in browser storage."));
+saveSettingsBtn?.addEventListener("click",()=>{
+  const menu = getMenu();
+  menu.taxRate = Number(taxRateInput.value || 0.07);
   sizeMultWrap.querySelectorAll("input[data-size]").forEach(inp=>{
-    m.sizeMultipliers[inp.dataset.size] = Number(inp.value || 1);
+    menu.sizeMultipliers[inp.dataset.size] = Number(inp.value || 1);
   });
-  saveMenu(m); 
+  saveMenu(menu);
   alert("Settings saved.");
 });
 
