@@ -40,33 +40,12 @@
         <h2>Menu</h2>
         <div class="filters">
           <label>Category:
-            <select id="categoryFilter">
-              <option value="all">All</option>
-              <option value="specialty">Pizzas</option>
-              <option value="sides">Sides</option>
-              <option value="drinks">Drinks</option>
-            </select>
+            <select id="categoryFilter"></select>
           </label>
           <input id="searchInput" placeholder="Search pizzas, sides, or drinks..." />
         </div>
       </div>
-
-      <div id="menuSections">
-        <div class="menu-category" data-category="specialty">
-          <h3>🍕 Pizzas</h3>
-          <div class="grid" id="pizzaGrid"></div>
-        </div>
-
-        <div class="menu-category" data-category="sides">
-          <h3>🍞 Sides</h3>
-          <div class="grid" id="sidesGrid"></div>
-        </div>
-
-        <div class="menu-category" data-category="drinks">
-          <h3>🥤 Drinks</h3>
-          <div class="grid" id="drinksGrid"></div>
-        </div>
-      </div>
+      <div id="menuGrid" class="grid"></div>
     </section>
 
     <section id="build" class="card">
