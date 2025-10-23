@@ -13,8 +13,8 @@ const SEED_MENU = {
     { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
-    { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", active: true },
-    { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "images/sprite.jpg", basePrice: 1.5, category: "drinks", active: true }
+    { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", sizes:["16 oz"], active: true },
+    { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "images/sprite.jpg", basePrice: 1.5, category: "drinks", sizes:["16 oz"], active: true }
   ],
   toppings: [
     { id: "mozzarella", name: "Mozzarella", price: 1.0, active: true },
@@ -23,13 +23,14 @@ const SEED_MENU = {
     { id: "onions", name: "Onions", price: 0.6, active: true },
     { id: "olives", name: "Olives", price: 0.8, active: true }
   ],
-  sizeMultipliers: { Small:1, Medium:1.35, Large:1.75 },
+  sizeMultipliers: { Small:1, Medium:1.35, Large:1.75, "16 oz":1 },
   taxRate: 0.07
 };
 
-// Utility
+// ---------------- Utility ----------------
 const $ = id => document.getElementById(id);
 const currency = n => `$${Number(n||0).toFixed(2)}`;
+
 function getCart(){ try{ return JSON.parse(localStorage.getItem(LS_CART_KEY)||"[]"); } catch{return [];} }
 function saveCart(c){ localStorage.setItem(LS_CART_KEY, JSON.stringify(c)); updateCartCount(); recalcTotals(); }
 function getMenu(){ try{ return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch{return null;} }
@@ -42,7 +43,7 @@ async function loadMenu() {
   return SEED_MENU;
 }
 
-// DOM Elements
+// ---------------- DOM Elements ----------------
 let menuGrid, categoryFilter, searchInput, baseSelect, sizeSelect, toppingsWrap, qtyInput, estPriceEl;
 let cartButton, cartDrawer, closeCart, cartItems, subTotal, taxTotal, grandTotal, checkoutBtn, clearCart, cartCount;
 let custName, custPhone, custAddress;
@@ -56,37 +57,29 @@ function cacheEls(){
   custName = $("custName"); custPhone = $("custPhone"); custAddress = $("custAddress");
 }
 
-// Render category options
+// ---------------- Menu ----------------
 function renderCategoryOptions(menu){
   if(!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>`+
-    menu.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+    (menu.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
 }
 
-// Render menu list
 function renderMenuList(menu){
   if(!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value||"all";
 
-  const items = (menu.items||[]).filter(i =>
-    i.active !== false &&
-    (cat === "all" || i.category === cat) &&
-    (i.name.toLowerCase().includes(term) || (i.desc||"").toLowerCase().includes(term))
-  );
+  const itemsByCategory = menu.categories.map(catObj => {
+    const items = menu.items.filter(i=>i.active!==false &&
+      i.category === catObj.id &&
+      (term==="" || i.name.toLowerCase().includes(term)||(i.desc||"").toLowerCase().includes(term))
+    );
+    return { category: catObj, items };
+  }).filter(c=>c.items.length > 0);
 
-  // Group items by category
-  const grouped = {};
-  items.forEach(i => {
-    if(!grouped[i.category]) grouped[i.category] = [];
-    grouped[i.category].push(i);
-  });
-
-  // Render HTML
-  menuGrid.innerHTML = Object.entries(grouped).map(([catId, items]) => {
-    const categoryName = menu.categories.find(c => c.id === catId)?.name || catId;
-    const headerHTML = `<h2 class="menu-category">${categoryName}</h2>`;
-    const itemsHTML = items.map(i => `
+  menuGrid.innerHTML = itemsByCategory.map(cg => `
+    <div class="category-header">${cg.category.name}</div>
+    ${cg.items.map(i=>`
       <article class="item" data-id="${i.id}">
         <img src="${i.img||'images/placeholder.png'}" alt="${i.name}" />
         <div class="content">
@@ -99,27 +92,26 @@ function renderMenuList(menu){
             </select></label>` : ""}
           <button class="primary" data-add="${i.id}">Add to Cart</button>
         </div>
-      </article>
-    `).join("");
-    return headerHTML + itemsHTML;
-  }).join("");
+      </article>`).join("")}
+  `).join("");
 
-  // Rebind event listeners for size dropdowns and add buttons...
+  // Handle size changes
   menuGrid.querySelectorAll("select.sizePick").forEach(sel=>{
-    sel.addEventListener("change",()=> {
-      const item = menu.items.find(x => x.id === sel.dataset.id);
-      const mult = menu.sizeMultipliers?.[sel.value] ?? 1;
+    sel.addEventListener("change",()=>{
+      const item = menu.items.find(x=>x.id===sel.dataset.id);
+      const mult = menu.sizeMultipliers?.[sel.value]??1;
       const priceEl = sel.closest(".item")?.querySelector(".price");
       if(priceEl && item) priceEl.textContent = currency(item.basePrice*mult);
     });
     sel.dispatchEvent(new Event("change"));
   });
 
+  // Add to cart
   menuGrid.querySelectorAll("button[data-add]").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const id = btn.dataset.add;
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
-      const size = sel?.value || (menu.items.find(x=>x.id===id)?.sizes[0] || "Small");
+      const size = sel?.value || "Small";
       addPresetToCart(id,size);
       cartDrawer.classList.add("open");
       cartDrawer.setAttribute("aria-hidden","false");
@@ -127,22 +119,30 @@ function renderMenuList(menu){
   });
 }
 
-
-
-// Add preset pizza
-function addPresetToCart(id,size){
+// ---------------- Builder ----------------
+function renderBuilderOptions(){
   const menu = getMenu();
-  const item = menu.items.find(i=>i.id===id);
-  if(!item) return;
-  const mult = menu.sizeMultipliers?.[size]??1;
-  const line = { id: crypto.randomUUID(), name:`${item.name} (${size})`, size, qty:1, unit:item.basePrice*mult, total:item.basePrice*mult, toppings:[] };
-  const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+  // Default Plain Cheese at top
+  const plain = { id: "plain-cheese", name:"Plain Cheese", basePrice:10 };
+  const bases = [plain, ...menu.items.filter(i=>i.active && i.category==="build")];
+  baseSelect.innerHTML = bases.map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
+  baseSelect.value = "plain-cheese";
+
+  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).map(s=>`<option>${s}</option>`).join("");
+  sizeSelect.value = "Small";
 }
 
-// Builder price
+function renderBuilderToppings(){
+  const menu = getMenu();
+  toppingsWrap.innerHTML = (menu.toppings||[]).map(t=>`
+    <label><input type="checkbox" value="${t.name}" data-price="${t.price}"> ${t.name} (${currency(t.price)})</label>
+  `).join("");
+}
+
 function recalcBuildPrice(){
   const menu = getMenu();
-  const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
+  let base = menu.items.find(i=>i.id===baseSelect.value);
+  if(!base && baseSelect.value==="plain-cheese") base={id:"plain-cheese",name:"Plain Cheese",basePrice:10};
   const size = sizeSelect.value||"Small";
   const mult = menu.sizeMultipliers?.[size]??1;
   const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")].reduce((s,c)=>s+Number(c.dataset.price||0),0);
@@ -150,10 +150,10 @@ function recalcBuildPrice(){
   estPriceEl.textContent = currency((base.basePrice*mult + toppingCost)*qty);
 }
 
-// Add build to cart
 function addBuildToCart(){
   const menu = getMenu();
-  const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
+  let base = menu.items.find(i=>i.id===baseSelect.value);
+  if(!base && baseSelect.value==="plain-cheese") base={id:"plain-cheese",name:"Plain Cheese",basePrice:10};
   const size = sizeSelect.value||"Small";
   const mult = menu.sizeMultipliers?.[size]??1;
   const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
@@ -165,18 +165,28 @@ function addBuildToCart(){
   cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
 }
 
-// Render cart
+// ---------------- Cart ----------------
+function addPresetToCart(id,size){
+  const menu = getMenu();
+  const item = menu.items.find(i=>i.id===id);
+  if(!item) return;
+  const mult = menu.sizeMultipliers?.[size]??1;
+  const line = { id: crypto.randomUUID(), name:`${item.name}${item.sizes?.length>1?` (${size})`:''}`, size, qty:1, unit:item.basePrice*mult, total:item.basePrice*mult, toppings:[] };
+  const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+}
+
 function renderCart(){
   const cart = getCart();
-  cartItems.innerHTML = cart.map(c=>`
-    <div class="cart-row" data-id="${c.id}">
+  cartItems.innerHTML = cart.map(c=>{
+    return `<div class="cart-row" data-id="${c.id}">
       <div>${c.name}${c.toppings?.length?`<br><small>Toppings: ${c.toppings.join(", ")}</small>`:""}</div>
-      <div><input type="number" min="1" value="${c.qty}" class="cart-qty" style="width:40px"></div>
+      <div>
+        <input type="number" min="1" value="${c.qty}" class="cart-qty" style="width:40px">
+      </div>
       <div>${currency(c.total)}</div>
       <button class="remove-item" title="Remove">✕</button>
-    </div>
-  `).join("");
-
+    </div>`;
+  }).join("");
   cartItems.querySelectorAll(".cart-qty").forEach(inp=>{
     inp.addEventListener("change",e=>{
       const row = e.target.closest(".cart-row"); const id=row.dataset.id;
@@ -187,7 +197,6 @@ function renderCart(){
       saveCart(cart); renderCart();
     });
   });
-
   cartItems.querySelectorAll(".remove-item").forEach(btn=>{
     btn.addEventListener("click",e=>{
       const row = e.target.closest(".cart-row"); const id=row.dataset.id;
@@ -197,7 +206,6 @@ function renderCart(){
   recalcTotals();
 }
 
-// Totals
 function recalcTotals(){
   const cart = getCart();
   const subtotal = cart.reduce((s,c)=>s+c.total,0);
@@ -208,24 +216,10 @@ function recalcTotals(){
   checkoutBtn.disabled = !(custName.value && custPhone.value && custAddress.value && cart.length>0);
   cartCount.textContent = cart.length;
 }
+
 function updateCartCount(){ cartCount.textContent = getCart().length; }
 
-// Builder toppings
-function renderBuilderToppings(){
-  const menu = getMenu();
-  toppingsWrap.innerHTML = (menu.toppings||[]).map(t=>`
-    <label><input type="checkbox" value="${t.name}" data-price="${t.price}"> ${t.name} (${currency(t.price)})</label>
-  `).join("");
-}
-
-// Builder selects
-function renderBuilderOptions(){
-  const menu = getMenu();
-  baseSelect.innerHTML = menu.items.filter(i=>i.active).map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
-  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).map(s=>`<option>${s}</option>`).join("");
-}
-
-// Events
+// ---------------- Events ----------------
 function bindEvents(){
   cartButton.addEventListener("click",()=>{ cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false"); });
   closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
@@ -241,7 +235,7 @@ function bindEvents(){
   $("addBuildBtn").addEventListener("click",addBuildToCart);
 }
 
-// Init
+// ---------------- Init ----------------
 async function init(){
   cacheEls();
   const menu = await loadMenu();
