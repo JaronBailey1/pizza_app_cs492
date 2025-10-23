@@ -70,14 +70,15 @@ button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
 
 /* Menu category header */
 .menu-category {
-  grid-column: 1 / -1;
-  font-size: 1.5rem;
+  grid-column: 1 / -1;  /* full width of the grid */
+  margin: 20px 0 8px;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin: 24px 0 12px;
   color: var(--brand);
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 4px;
 }
+
 
 /* Single-size label (for drinks) */
 .single-size { font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; }
