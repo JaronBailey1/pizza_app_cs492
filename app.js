@@ -10,8 +10,8 @@ const SEED_MENU = {
   ],
   items: [
     { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "https://cdn.pixabay.com/photo/2025/09/28/09/25/fizz-9859977_1280.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://cdn.pixabay.com/photo/2023/05/28/14/13/ai-generated-8023786_640.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "https://cdn.pixabay.com/photo/2017/12/09/08/18/pizza-3007395_640.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
     { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
     { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "images/sprite.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
