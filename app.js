@@ -99,7 +99,6 @@ function renderMenuList(menu){
     sel.dispatchEvent(new Event("change"));
   });
 
-  // Add to cart auto-opens drawer
   menuGrid.querySelectorAll("button[data-add]").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const id = btn.dataset.add;
