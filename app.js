@@ -9,8 +9,8 @@ const SEED_MENU = {
     { id: "drinks", name: "Drinks" }
   ],
   items: [
-    { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "https://images.pexels.com/photos/29605927/pexels-photo-29605927.jpeg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://www.pexels.com/photo/buratta-pizza-27793841/", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "images/pep-supreme.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
     { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", active: true },
@@ -27,10 +27,9 @@ const SEED_MENU = {
   taxRate: 0.07
 };
 
-// Utility functions
+// Utility
 const $ = id => document.getElementById(id);
 const currency = n => `$${Number(n||0).toFixed(2)}`;
-
 function getCart(){ try{ return JSON.parse(localStorage.getItem(LS_CART_KEY)||"[]"); } catch{return [];} }
 function saveCart(c){ localStorage.setItem(LS_CART_KEY, JSON.stringify(c)); updateCartCount(); recalcTotals(); }
 function getMenu(){ try{ return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch{return null;} }
@@ -43,7 +42,7 @@ async function loadMenu() {
   return SEED_MENU;
 }
 
-// DOM elements
+// DOM Elements
 let menuGrid, categoryFilter, searchInput, baseSelect, sizeSelect, toppingsWrap, qtyInput, estPriceEl;
 let cartButton, cartDrawer, closeCart, cartItems, subTotal, taxTotal, grandTotal, checkoutBtn, clearCart, cartCount;
 let custName, custPhone, custAddress;
@@ -57,38 +56,47 @@ function cacheEls(){
   custName = $("custName"); custPhone = $("custPhone"); custAddress = $("custAddress");
 }
 
-// Render functions (menu, builder, cart)
+// Render category options
 function renderCategoryOptions(menu){
   if(!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>`+
-    (menu.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+    menu.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
 }
 
+// Render menu list
 function renderMenuList(menu){
   if(!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value||"all";
-  const items = (menu.items||[]).filter(i=>i.active!==false &&
-    (cat==="all"||i.category===cat) &&
-    (i.name.toLowerCase().includes(term)||(i.desc||"").toLowerCase().includes(term))
-  );
 
-  menuGrid.innerHTML = items.map(i=>`
-    <article class="item" data-id="${i.id}">
-      <img src="${i.img||'images/placeholder.png'}" alt="${i.name}" />
-      <div class="content">
-        <h3>${i.name}</h3>
-        <p>${i.desc||''}</p>
-        <div class="price">${currency(i.basePrice||0)}</div>
-        ${i.sizes?.length?`<label>Size:
-          <select data-id="${i.id}" class="sizePick">
-            ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
-          </select></label>`:``}
-        <button class="primary" data-add="${i.id}">Add to Cart</button>
-      </div>
-    </article>
-  `).join("");
+  let html = "";
+  menu.categories.forEach(c=>{
+    const items = menu.items.filter(i=>i.active && (cat==="all"||cat===c.id) && i.category===c.id &&
+      (i.name.toLowerCase().includes(term) || (i.desc||"").toLowerCase().includes(term))
+    );
+    if(items.length){
+      html += `<h3 style="margin:12px 0;text-transform:uppercase;color:#c6372f;">${c.name}</h3>`;
+      html += items.map(i=>`
+        <article class="item" data-id="${i.id}">
+          <img src="${i.img||'images/placeholder.png'}" alt="${i.name}" />
+          <div class="content">
+            <h3>${i.name}</h3>
+            <p>${i.desc||''}</p>
+            <div class="price">${currency(i.basePrice||0)}</div>
+            ${i.sizes?.length?`<label>Size:
+              <select data-id="${i.id}" class="sizePick">
+                ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
+              </select></label>`:``}
+            <button class="primary" data-add="${i.id}">Add to Cart</button>
+          </div>
+        </article>
+      `).join("");
+    }
+  });
 
+  menuGrid.innerHTML = html;
+
+  // Bind size changes
   menuGrid.querySelectorAll("select.sizePick").forEach(sel=>{
     sel.addEventListener("change",()=>{
       const item = menu.items.find(x=>x.id===sel.dataset.id);
@@ -99,6 +107,7 @@ function renderMenuList(menu){
     sel.dispatchEvent(new Event("change"));
   });
 
+  // Add to cart
   menuGrid.querySelectorAll("button[data-add]").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const id = btn.dataset.add;
@@ -111,7 +120,17 @@ function renderMenuList(menu){
   });
 }
 
-// Builder price recalc
+// Add preset pizza
+function addPresetToCart(id,size){
+  const menu = getMenu();
+  const item = menu.items.find(i=>i.id===id);
+  if(!item) return;
+  const mult = menu.sizeMultipliers?.[size]??1;
+  const line = { id: crypto.randomUUID(), name:`${item.name} (${size})`, size, qty:1, unit:item.basePrice*mult, total:item.basePrice*mult, toppings:[] };
+  const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
+}
+
+// Builder price
 function recalcBuildPrice(){
   const menu = getMenu();
   const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
@@ -120,16 +139,6 @@ function recalcBuildPrice(){
   const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")].reduce((s,c)=>s+Number(c.dataset.price||0),0);
   const qty = Math.max(1,Number(qtyInput.value||1));
   estPriceEl.textContent = currency((base.basePrice*mult + toppingCost)*qty);
-}
-
-// Add preset pizza to cart
-function addPresetToCart(id,size){
-  const menu = getMenu();
-  const item = menu.items.find(i=>i.id===id);
-  if(!item) return;
-  const mult = menu.sizeMultipliers?.[size]??1;
-  const line = { id: crypto.randomUUID(), name:`${item.name} (${size})`, size, qty:1, unit:item.basePrice*mult, total:item.basePrice*mult, toppings:[] };
-  const cart = getCart(); cart.push(line); saveCart(cart); renderCart();
 }
 
 // Add build to cart
@@ -147,19 +156,18 @@ function addBuildToCart(){
   cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
 }
 
-// Cart rendering
+// Render cart
 function renderCart(){
   const cart = getCart();
-  cartItems.innerHTML = cart.map(c=>{
-    return `<div class="cart-row" data-id="${c.id}">
+  cartItems.innerHTML = cart.map(c=>`
+    <div class="cart-row" data-id="${c.id}">
       <div>${c.name}${c.toppings?.length?`<br><small>Toppings: ${c.toppings.join(", ")}</small>`:""}</div>
-      <div>
-        <input type="number" min="1" value="${c.qty}" class="cart-qty" style="width:40px">
-      </div>
+      <div><input type="number" min="1" value="${c.qty}" class="cart-qty" style="width:40px"></div>
       <div>${currency(c.total)}</div>
       <button class="remove-item" title="Remove">✕</button>
-    </div>`;
-  }).join("");
+    </div>
+  `).join("");
+
   cartItems.querySelectorAll(".cart-qty").forEach(inp=>{
     inp.addEventListener("change",e=>{
       const row = e.target.closest(".cart-row"); const id=row.dataset.id;
@@ -170,6 +178,7 @@ function renderCart(){
       saveCart(cart); renderCart();
     });
   });
+
   cartItems.querySelectorAll(".remove-item").forEach(btn=>{
     btn.addEventListener("click",e=>{
       const row = e.target.closest(".cart-row"); const id=row.dataset.id;
@@ -179,7 +188,7 @@ function renderCart(){
   recalcTotals();
 }
 
-// Totals recalc
+// Totals
 function recalcTotals(){
   const cart = getCart();
   const subtotal = cart.reduce((s,c)=>s+c.total,0);
@@ -190,8 +199,9 @@ function recalcTotals(){
   checkoutBtn.disabled = !(custName.value && custPhone.value && custAddress.value && cart.length>0);
   cartCount.textContent = cart.length;
 }
+function updateCartCount(){ cartCount.textContent = getCart().length; }
 
-// Init builder toppings
+// Builder toppings
 function renderBuilderToppings(){
   const menu = getMenu();
   toppingsWrap.innerHTML = (menu.toppings||[]).map(t=>`
@@ -199,7 +209,14 @@ function renderBuilderToppings(){
   `).join("");
 }
 
-// Event listeners
+// Builder selects
+function renderBuilderOptions(){
+  const menu = getMenu();
+  baseSelect.innerHTML = menu.items.filter(i=>i.active).map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
+  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).map(s=>`<option>${s}</option>`).join("");
+}
+
+// Events
 function bindEvents(){
   cartButton.addEventListener("click",()=>{ cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false"); });
   closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
@@ -215,14 +232,7 @@ function bindEvents(){
   $("addBuildBtn").addEventListener("click",addBuildToCart);
 }
 
-// Populate builder selects
-function renderBuilderOptions(){
-  const menu = getMenu();
-  baseSelect.innerHTML = menu.items.filter(i=>i.active).map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
-  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).map(s=>`<option>${s}</option>`).join("");
-}
-
-// App init
+// Init
 async function init(){
   cacheEls();
   const menu = await loadMenu();
