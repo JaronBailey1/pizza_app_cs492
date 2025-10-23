@@ -51,12 +51,18 @@
     <section id="build" class="card">
       <h2>Build Your Own Pizza</h2>
       <div class="builder">
-        <div class="builder-row">
+        <div class="builder-row" style="gap:10px; flex-wrap:wrap;">
           <label>Base:
-            <select id="baseSelect"></select>
+            <select id="baseSelect">
+              <option value="plain-cheese" selected>Plain Cheese</option>
+            </select>
           </label>
           <label>Size:
-            <select id="sizeSelect"></select>
+            <select id="sizeSelect">
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+            </select>
           </label>
           <label>Quantity:
             <input type="number" id="qtyInput" min="1" value="1" />
@@ -66,7 +72,7 @@
           <legend>Toppings</legend>
           <div id="toppingsWrap" class="chips"></div>
         </fieldset>
-        <div class="builder-row between">
+        <div class="builder-row between" style="justify-content:space-between; align-items:center;">
           <div class="price">Est. Price: <strong id="estPrice">$0.00</strong></div>
           <button id="addBuildBtn" class="primary">Add to Cart</button>
         </div>
@@ -83,28 +89,3 @@
     <footer class="drawer-footer">
       <div class="totals">
         <div>Subtotal: <span id="subTotal">$0.00</span></div>
-        <div>Tax: <span id="taxTotal">$0.00</span></div>
-        <div class="grand">Total: <strong id="grandTotal">$0.00</strong></div>
-      </div>
-      <div class="delivery">
-        <label>Name: <input id="custName" type="text" placeholder="Your Name"></label>
-        <label>Phone: <input id="custPhone" type="tel" placeholder="(555) 123-4567"></label>
-        <label>Address: <input id="custAddress" type="text" placeholder="Street, City, Zip"></label>
-      </div>
-      <button id="checkoutBtn" class="primary" disabled>Checkout</button>
-      <button id="clearCart" class="ghost">Clear Cart</button>
-    </footer>
-  </aside>
-
-  <footer class="site-footer">
-    <small>© <span id="year"></span> P'zzazz Pizza</small>
-    <div style="margin-top:8px"><a href="./admin.html">Staff / Admin</a></div>
-  </footer>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('year').textContent = new Date().getFullYear();
-    });
-  </script>
-</body>
-</html>
