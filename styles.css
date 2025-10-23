@@ -110,10 +110,88 @@ input, select { background: #fff; color: var(--text); border:1px solid var(--bor
 .cart-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
 .cart-row small { color: var(--muted); }
 
-/* Builder tweaks */
-.builder-controls { display:flex; flex-direction:column; gap:12px; margin-bottom:12px; }
-.builder-controls label { font-weight:600; }
-.builder-controls input, .builder-controls select { max-width:150px; }
+/* Builder section layout */
+.builder {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.builder h2 {
+  margin: 0 0 8px;
+  color: var(--brand);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.builder-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.builder-controls label {
+  font-weight: 600;
+}
+
+.builder-controls input,
+.builder-controls select {
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.toppings-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px 12px;
+  margin-top: 8px;
+}
+
+.toppings-wrap label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.builder-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.builder-footer .est-price {
+  font-weight: 700;
+  color: var(--brand);
+  font-size: 1.2rem;
+}
+
+.builder-footer button {
+  min-width: 120px;
+}
+
+/* Small responsive tweaks for builder */
+@media (max-width:600px){
+  .builder-controls {
+    grid-template-columns: 1fr;
+  }
+  .toppings-wrap {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  .builder-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
 
 /* Footer */
 .site-footer { text-align:center; color: var(--muted); padding: 18px 12px; }
