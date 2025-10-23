@@ -9,8 +9,8 @@ const SEED_MENU = {
     { id: "drinks", name: "Drinks" }
   ],
   items: [
-    { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "images/pep-supreme.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "images/margherita.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "https://images.pexels.com/photos/29605927/pexels-photo-29605927.jpeg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://www.pexels.com/photo/buratta-pizza-27793841/", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "images/veggie.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
     { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", active: true },
