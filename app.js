@@ -69,56 +69,62 @@ function renderMenuList(menu){
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value||"all";
 
-  let html = "";
-  menu.categories.forEach(c=>{
-    const items = menu.items.filter(i=>i.active && (cat==="all"||cat===c.id) && i.category===c.id &&
-      (i.name.toLowerCase().includes(term) || (i.desc||"").toLowerCase().includes(term))
-    );
-    if(items.length){
-      html += `<h3 style="margin:12px 0;text-transform:uppercase;color:#c6372f;">${c.name}</h3>`;
-      html += items.map(i=>`
+  // group items by category
+  const filtered = (menu.items||[]).filter(i => i.active !== false && 
+    (cat === "all" || i.category === cat) &&
+    (i.name.toLowerCase().includes(term) || (i.desc||"").toLowerCase().includes(term))
+  );
+
+  const categories = menu.categories.filter(c => filtered.some(i => i.category === c.id));
+
+  menuGrid.innerHTML = categories.map(c => {
+    const items = filtered.filter(i => i.category === c.id);
+    return `
+      <h2 class="menu-category">${c.name}</h2>
+      ${items.map(i => `
         <article class="item" data-id="${i.id}">
           <img src="${i.img||'images/placeholder.png'}" alt="${i.name}" />
           <div class="content">
             <h3>${i.name}</h3>
             <p>${i.desc||''}</p>
             <div class="price">${currency(i.basePrice||0)}</div>
-            ${i.sizes?.length?`<label>Size:
+            ${i.sizes && i.sizes.length > 1 ? `<label>Size:
               <select data-id="${i.id}" class="sizePick">
-                ${i.sizes.map(s=>`<option>${s}</option>`).join("")}
-              </select></label>`:``}
+                ${i.sizes.map(s => `<option>${s}</option>`).join("")}
+              </select></label>` 
+              : i.sizes && i.sizes.length === 1 ? `<div class="single-size">Size: ${i.sizes[0]}</div>` 
+              : ""}
             <button class="primary" data-add="${i.id}">Add to Cart</button>
           </div>
         </article>
-      `).join("");
-    }
-  });
+      `).join("")}
+    `;
+  }).join("");
 
-  menuGrid.innerHTML = html;
-
-  // Bind size changes
-  menuGrid.querySelectorAll("select.sizePick").forEach(sel=>{
-    sel.addEventListener("change",()=>{
-      const item = menu.items.find(x=>x.id===sel.dataset.id);
-      const mult = menu.sizeMultipliers?.[sel.value]??1;
+  // attach size change events
+  menuGrid.querySelectorAll("select.sizePick").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const item = menu.items.find(x => x.id === sel.dataset.id);
+      const mult = menu.sizeMultipliers?.[sel.value] ?? 1;
       const priceEl = sel.closest(".item")?.querySelector(".price");
-      if(priceEl && item) priceEl.textContent = currency(item.basePrice*mult);
+      if(priceEl && item) priceEl.textContent = currency(item.basePrice * mult);
     });
     sel.dispatchEvent(new Event("change"));
   });
 
-  // Add to cart
-  menuGrid.querySelectorAll("button[data-add]").forEach(btn=>{
-    btn.addEventListener("click",()=>{
+  // add to cart
+  menuGrid.querySelectorAll("button[data-add]").forEach(btn => {
+    btn.addEventListener("click", () => {
       const id = btn.dataset.add;
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
-      const size = sel?.value || "Small";
-      addPresetToCart(id,size);
+      const size = sel?.value || menu.items.find(x => x.id === id)?.sizes?.[0] || "Small";
+      addPresetToCart(id, size);
       cartDrawer.classList.add("open");
-      cartDrawer.setAttribute("aria-hidden","false");
+      cartDrawer.setAttribute("aria-hidden", "false");
     });
   });
 }
+
 
 // Add preset pizza
 function addPresetToCart(id,size){
