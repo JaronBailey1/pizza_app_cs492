@@ -17,7 +17,7 @@ const SEED_MENU = {
     { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "images/sprite.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
   ],
   toppings: [
-    { id: "mozzarella", name: "Mozzarella", price: 1.0, active: true },
+    { id: "mozzarella", name: "Extra Mozzarella", price: 1.0, active: true },
     { id: "pepperoni", name: "Pepperoni", price: 1.25, active: true },
     { id: "mushrooms", name: "Mushrooms", price: 0.9, active: true },
     { id: "onions", name: "Onions", price: 0.6, active: true },
