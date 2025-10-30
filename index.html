@@ -27,6 +27,7 @@
   </header>
 
   <main class="container">
+    <!-- Hero -->
     <section id="hero" class="hero card">
       <div>
         <h1>Craving Pizza? Order Right Now!</h1>
@@ -35,6 +36,7 @@
       </div>
     </section>
 
+    <!-- Menu -->
     <section id="menu" class="card">
       <div class="section-head">
         <h2>Menu</h2>
@@ -48,6 +50,7 @@
       <div id="menuGrid" class="grid"></div>
     </section>
 
+    <!-- Build Your Own -->
     <section id="build" class="card">
       <h2>Build Your Own Pizza</h2>
       <div class="builder">
@@ -80,6 +83,7 @@
     </section>
   </main>
 
+  <!-- Cart Drawer -->
   <aside id="cartDrawer" class="drawer" aria-hidden="true">
     <header class="drawer-header">
       <h3>Your Cart</h3>
@@ -89,3 +93,19 @@
     <footer class="drawer-footer">
       <div class="totals">
         <div>Subtotal: <span id="subTotal">$0.00</span></div>
+        <div>Tax: <span id="taxTotal">$0.00</span></div>
+        <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
+      </div>
+      <div class="checkout-form">
+        <label>Name: <input id="custName" placeholder="Your name" /></label>
+        <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
+        <label>Address: <input id="custAddress" placeholder="Delivery address" /></label>
+      </div>
+      <div class="actions">
+        <button id="checkoutBtn" class="primary">Checkout</button>
+        <button id="clearCart" class="secondary">Clear Cart</button>
+      </div>
+    </footer>
+  </aside>
+</body>
+</html>
