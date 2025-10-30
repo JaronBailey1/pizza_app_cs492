@@ -153,3 +153,10 @@ input, select { background: #fff; color: var(--text); border:1px solid var(--bor
   .hero h1 { font-size:1.4rem; }
   .item img { height:140px; }
 }
+
+#admin-link {
+  display: block !important;   /* make sure it’s shown */
+  visibility: visible !important;
+  text-align: center;
+  margin: 20px auto;
+}
