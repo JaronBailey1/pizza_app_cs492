@@ -27,7 +27,7 @@ const SEED_MENU = {
   taxRate: 0.07
 };
 
-// Utilities
+// Utils
 const $ = id => document.getElementById(id);
 const currency = n => `$${Number(n||0).toFixed(2)}`;
 
@@ -43,7 +43,7 @@ async function loadMenu() {
   return SEED_MENU;
 }
 
-// DOM elements
+// Cached elements
 let menuGrid, categoryFilter, searchInput, baseSelect, sizeSelect, toppingsWrap, qtyInput, estPriceEl;
 let cartButton, cartDrawer, closeCart, cartItems, subTotal, taxTotal, grandTotal, checkoutBtn, clearCart, cartCount;
 let custName, custPhone, custAddress;
@@ -57,23 +57,28 @@ function cacheEls(){
   custName = $("custName"); custPhone = $("custPhone"); custAddress = $("custAddress");
 }
 
-// Render functions
+// Render category dropdown
 function renderCategoryOptions(menu){
   if(!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>` +
     (menu.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
 }
 
+// Render menu grid
 function renderMenuList(menu){
   if(!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
   const cat = categoryFilter?.value||"all";
 
   const grouped = {};
-  menu.items.filter(i=>i.active).forEach(i=>{
-    if(!grouped[i.category]) grouped[i.category] = [];
-    if(i.name.toLowerCase().includes(term)||(i.desc||"").toLowerCase().includes(term)) grouped[i.category].push(i);
-  });
+  menu.items
+    .filter(i=>i.active)
+    .filter(i=>cat==="all" || i.category===cat)
+    .forEach(i=>{
+      if(!grouped[i.category]) grouped[i.category]=[];
+      if(i.name.toLowerCase().includes(term)||(i.desc||"").toLowerCase().includes(term))
+        grouped[i.category].push(i);
+    });
 
   menuGrid.innerHTML = Object.keys(grouped).map(catId=>{
     const catName = menu.categories.find(c=>c.id===catId)?.name || catId;
@@ -98,6 +103,7 @@ function renderMenuList(menu){
     `;
   }).join("");
 
+  // handle size and add buttons
   menuGrid.querySelectorAll("select.sizePick").forEach(sel=>{
     sel.addEventListener("change",()=>{
       const item = menu.items.find(x=>x.id===sel.dataset.id);
@@ -112,7 +118,7 @@ function renderMenuList(menu){
     btn.addEventListener("click",()=>{
       const id = btn.dataset.add;
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
-      const size = sel?.value || (menu.items.find(i=>i.id===id)?.sizes[0] || "Small");
+      const size = sel?.value || (menu.items.find(i=>i.id===id)?.sizes?.[0] || "Small");
       addPresetToCart(id,size);
       cartDrawer.classList.add("open");
       cartDrawer.setAttribute("aria-hidden","false");
@@ -120,7 +126,7 @@ function renderMenuList(menu){
   });
 }
 
-// Builder price recalc
+// Build price
 function recalcBuildPrice(){
   const menu = getMenu();
   const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
@@ -131,7 +137,6 @@ function recalcBuildPrice(){
   estPriceEl.textContent = currency((base.basePrice*mult + toppingCost)*qty);
 }
 
-// Add preset pizza to cart
 function addPresetToCart(id,size){
   const menu = getMenu();
   const item = menu.items.find(i=>i.id===id);
@@ -142,7 +147,6 @@ function addPresetToCart(id,size){
   const cart = getCart(); cart.push(line); saveCart(cart);
 }
 
-// Add build to cart
 function addBuildToCart(){
   const menu = getMenu();
   const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
@@ -157,7 +161,7 @@ function addBuildToCart(){
   cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
 }
 
-// Cart rendering
+// Cart render
 function renderCart(){
   const cart = getCart();
   cartItems.innerHTML = cart.map(c=>{
@@ -190,7 +194,6 @@ function renderCart(){
   recalcTotals();
 }
 
-// Totals recalc
 function recalcTotals(){
   const cart = getCart();
   const subtotal = cart.reduce((s,c)=>s+c.total,0);
@@ -202,7 +205,7 @@ function recalcTotals(){
   cartCount.textContent = cart.length;
 }
 
-// Init builder toppings
+// Builder
 function renderBuilderToppings(){
   const menu = getMenu();
   toppingsWrap.innerHTML = (menu.toppings||[]).map(t=>`
@@ -210,30 +213,29 @@ function renderBuilderToppings(){
   `).join("");
 }
 
-// Populate builder dropdowns
 function renderBuilderOptions(){
   const menu = getMenu();
   baseSelect.innerHTML = `<option value="plain">Plain Cheese</option>` + menu.items.filter(i=>i.active).map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
   sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).filter(s=>s!=="16 oz").map(s=>`<option>${s}</option>`).join("");
 }
 
-// Bind events
+// Events
 function bindEvents(){
   cartButton.addEventListener("click",()=>{ cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false"); });
   closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
-  clearCart.addEventListener("click",()=>{ localStorage.removeItem(LS_CART_KEY); renderCart(); });
-  checkoutBtn.addEventListener("click",()=>{ alert("Order placed!"); localStorage.removeItem(LS_CART_KEY); renderCart(); cartDrawer.classList.remove("open"); });
+  clearCart.addEventListener("click",()=>{ saveCart([]); });
+  checkoutBtn.addEventListener("click",()=>{ alert("Order placed!"); saveCart([]); cartDrawer.classList.remove("open"); });
   baseSelect.addEventListener("change",recalcBuildPrice);
   sizeSelect.addEventListener("change",recalcBuildPrice);
   qtyInput.addEventListener("input",recalcBuildPrice);
   toppingsWrap.addEventListener("change",recalcBuildPrice);
-  [custName,custPhone,custAddress].forEach(inp=>inp.addEventListener("input",recalcTotals));
-  categoryFilter.addEventListener("change",()=>{ loadMenu().then(renderMenuList); });
-  searchInput.addEventListener("input",()=>{ loadMenu().then(renderMenuList); });
+  [custName,custPhone,custAddress].forEach(inp=>inp?.addEventListener("input",recalcTotals));
+  categoryFilter.addEventListener("change",()=>{ renderMenuList(getMenu()); });
+  searchInput.addEventListener("input",()=>{ renderMenuList(getMenu()); });
   $("addBuildBtn").addEventListener("click",addBuildToCart);
 }
 
-// Init app
+// Init
 async function init(){
   cacheEls();
   const menu = await loadMenu();
