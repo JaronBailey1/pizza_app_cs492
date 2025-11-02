@@ -166,3 +166,9 @@ async function boot(){
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
+
+
+document.getElementById("refreshMenuBtn")?.addEventListener("click", ()=>{
+  alert("Menu saved. Reloading the app to reflect changes…");
+  window.location.href = "./index.html";
+});
