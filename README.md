@@ -1,4 +1,4 @@
-# pizza_app_cs492 — Sprint 2 Week 1
+# pizza_app_cs492
 
 This is a complete, working front-end prototype for the Pizza Restaurant Ordering System.
 
