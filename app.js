@@ -12,7 +12,7 @@ const SEED_MENU = {
     { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "https://cdn.pixabay.com/photo/2025/09/28/09/25/fizz-9859977_1280.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://cdn.pixabay.com/photo/2023/05/28/14/13/ai-generated-8023786_640.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "https://cdn.pixabay.com/photo/2017/12/09/08/18/pizza-3007395_640.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "images/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
+    { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "https://sallysbakingaddiction.com/wp-content/uploads/2020/02/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
     { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "images/coke.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
     { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "images/sprite.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
   ],
@@ -224,8 +224,16 @@ function bindEvents(){
   cartButton.addEventListener("click",()=>{ cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false"); });
   closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
   clearCart.addEventListener("click",()=>{ saveCart([]); });
-  checkoutBtn.addEventListener("click",()=>{ alert("Order placed!"); saveCart([]); cartDrawer.classList.remove("open"); });
-  baseSelect.addEventListener("change",recalcBuildPrice);
+  checkoutBtn.addEventListener("click", ()=>{
+  const customer = {
+    name: (custName?.value || "").trim(),
+    phone: (custPhone?.value || "").trim(),
+    address: (custAddress?.value || "").trim()
+  };
+  try { localStorage.setItem("pizza.customer", JSON.stringify(customer)); } catch(e){}
+  window.location.href = "./payment.html";
+});
+baseSelect.addEventListener("change",recalcBuildPrice);
   sizeSelect.addEventListener("change",recalcBuildPrice);
   qtyInput.addEventListener("input",recalcBuildPrice);
   toppingsWrap.addEventListener("change",recalcBuildPrice);
