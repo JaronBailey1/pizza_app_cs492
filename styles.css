@@ -1,162 +1,99 @@
-:root {
-  --bg: #fff6ee;          /* warm crust background */
-  --surface: #fffdfa;     /* card surface */
-  --muted: #7a6552;       /* muted brown */
-  --text: #2b2b2b;        /* dark text */
-  --brand: #c6372f;       /* tomato red */
-  --brand-ink: #fff4e6;   /* creamy pale text for brand buttons */
-  --border: #e6d6c6;      /* soft border like crust */
-  --shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background:
-    radial-gradient(1000px 400px at 10% -10%, rgba(198,55,47,0.06), transparent 30%),
-    var(--bg);
-  color: var(--text);
-}
+/* --- Layout fixes: Builder + Checkout --- */
 
-/* Topbar */
-.topbar {
-  position: sticky; top:0; z-index: 20;
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 12px 16px; border-bottom:1px solid var(--border);
-  background: linear-gradient(180deg, rgba(198,55,47,0.06), rgba(250,240,230,0.02));
-  backdrop-filter: blur(4px);
-}
-.brand { display:flex; align-items:center; gap:10px; }
-.logo { width:36px; height:36px; }
-.brand-text { display:flex; flex-direction:column; line-height:1.1; }
-.brand-text strong { font-size: 1.05rem; }
-.brand-text span { color: var(--muted); font-size: .8rem; }
-.topbar nav { display:flex; align-items:center; gap:10px; }
-.topbar nav a { color: var(--text); margin-right:6px; text-decoration:none; font-weight:600; padding:6px 8px; border-radius:8px; }
-.topbar nav a:hover { background: rgba(198,55,47,0.06); color: var(--brand); }
+/* Make sure sizing is predictable */
+*, *::before, *::after { box-sizing: border-box; }
 
-/* Buttons */
-button { cursor:pointer; border-radius:12px; padding:10px 14px; border:1px solid var(--border); background:transparent; color:var(--text); }
-button.primary { background: var(--brand); color: var(--brand-ink); border:none; font-weight:700; box-shadow: 0 6px 18px rgba(198,55,47,0.12); }
-button.ghost { background:transparent; color:var(--muted); border:1px solid rgba(0,0,0,0.04); }
-button.secondary {
-  background: transparent;
-  color: var(--brand);
-  border: 1px dashed rgba(198,55,47,0.15);
-  padding:6px 10px;
-  border-radius:8px;
-  font-weight:700;
-}
-button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
-
-/* Container & cards */
-.container { max-width:1100px; margin: 24px auto; padding: 0 16px; }
-.card {
-  background: var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px; padding:18px; margin-bottom:18px; box-shadow: var(--shadow);
-}
-.row { display:flex; }
-.gap { gap: 10px; }
-
-/* Hero section */
-.hero { display:flex; align-items:center; min-height: 180px; background: linear-gradient(120deg, rgba(198,55,47,0.03), rgba(255,242,230,0.03)); }
-.hero h1 { margin: 0 0 8px; font-size: 1.8rem; color: #1f1f1f; }
-.hero p { color: var(--muted); margin: 0 0 14px; max-width: 60ch; }
-
-/* Grid & items */
-.grid { display:grid; gap:14px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
-.item {
-  background: linear-gradient(180deg, rgba(198,55,47,0.02), rgba(255,244,234,0.02));
-  border:1px solid var(--border); border-radius:14px; overflow:hidden;
-  display:flex; flex-direction:column; transition: transform .08s ease, box-shadow .2s ease;
-}
-.item:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,.06); }
-.item img { width:100%; height:160px; object-fit:cover; }
-.item .content { padding:12px; display:flex; flex-direction:column; gap:8px; }
-.price { color: var(--brand); font-weight:700; }
-
-/* Menu headers (category titles) */
-.menu-header {
-  grid-column: 1/-1;
-  font-size: 1.2rem;
-  font-weight:700;
-  padding:4px 0;
-  margin-top:14px;
-  margin-bottom:6px;
-  border-bottom: 1px dashed var(--border);
-}
-
-/* Inputs & filters */
-input, select { background: #fff; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
-.section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.filters { display:flex; gap:12px; margin: 6px 0 8px; flex-wrap:wrap; }
-
-/* Cart drawer */
-.drawer {
-  position: fixed; top:0; right:-420px; width: 380px; max-width: 92vw; height:100vh;
-  background:#fff; border-left:1px solid var(--border); transition:right .25s ease;
-  display:flex; flex-direction:column; z-index:30;
-}
-.drawer.open { right:0; }
-.drawer-header, .drawer-footer { padding:12px; border-bottom:1px solid var(--border); }
-.drawer-footer { border-top:1px solid var(--border); margin-top:auto; }
-.cart-list { padding:12px; display:flex; flex-direction:column; gap:8px; max-height: calc(100vh - 200px); overflow:auto; }
-.cart-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
-.cart-row small { color: var(--muted); }
-
-/* Customer delivery form in cart drawer */
-.drawer-footer .delivery {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.drawer-footer .delivery label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  gap: 2px;
-}
-
-/* Horizontal toppings layout */
-#toppingsWrap {
+/* Builder top controls in a tidy row that wraps nicely */
+.builder .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
 }
 
-#toppingsWrap label {
+.builder .row label {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: #fffdfa;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s ease;
-}
-
-#toppingsWrap input[type=checkbox] {
+  gap: 8px;
   margin: 0;
 }
 
-/* Footer */
-.site-footer { text-align:center; color: var(--muted); padding: 18px 12px; }
-
-/* Small responsive tweaks */
-@media (max-width:600px){
-  .topbar { padding:10px; }
-  .hero h1 { font-size:1.4rem; }
-  .item img { height:140px; }
+/* Inputs look consistent */
+.builder select,
+.builder input[type="number"],
+.checkout-form input {
+  width: 100%;
+  max-width: 220px;      /* gives them a nice, even size on desktop */
+  padding: 10px 12px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  line-height: 1.2;
 }
 
-#admin-link {
-  display: block !important;   /* make sure it’s shown */
-  visibility: visible !important;
-  text-align: center;
-  margin: 20px auto;
+/* Toppings as clean, wrap-friendly "chips" */
+.toppings,
+#toppingsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+#toppingsWrap label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--panel, #fffaf3);
+  white-space: nowrap; /* keeps ($x.xx) with the topping name */
+}
+
+/* Cart drawer: put Name + Phone on one row, Address full width */
+.checkout-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns on desktop */
+  gap: 12px 16px;
+  align-items: start;
+  margin-top: 8px;
+}
+
+/* Better label structure */
+.checkout-form label {
+  display: flex;
+  flex-direction: column; /* label text above input */
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* Make Address span both columns */
+.checkout-form label:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* Totals & actions spacing */
+.drawer-footer .totals { margin-bottom: 10px; }
+.drawer-footer .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Buttons line-height/height consistency */
+button.primary,
+button.secondary,
+button.ghost,
+#addBuildBtn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  line-height: 1.2;
+}
+
+/* Responsive tweaks: stack fields on smaller screens */
+@media (max-width: 640px) {
+  .builder .row label { flex: 1 1 100%; }      /* each control gets its own line */
+  .builder select,
+  .builder input[type="number"] { max-width: 100%; }
+
+  .checkout-form {
+    grid-template-columns: 1fr; /* stack Name, Phone, Address */
+  }
+  .checkout-form label:nth-child(3) { grid-column: auto; } /* Address no longer spans */
 }
