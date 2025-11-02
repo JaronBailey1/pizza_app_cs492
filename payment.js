@@ -31,6 +31,7 @@ function renderSummary(){
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const cust = JSON.parse(localStorage.getItem("pizza.customer") || "{}");
   renderSummary();
   const form = document.getElementById("payForm");
   const result = document.getElementById("payResult");
