@@ -9,6 +9,9 @@ This is a complete, working front-end prototype for the Pizza Restaurant Orderin
 - **Admin** (login required) — edit menu/toppings/tax, changes persist in localStorage
 - **Mobile-optimized** (viewport + responsive CSS)
 
+## Staff Login (Demo)
+- **Username:** `admin`  **Password:** `admin123`
+
 ## Run locally
 ```bash
 # open a terminal INSIDE this folder
