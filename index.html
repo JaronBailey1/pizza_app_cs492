@@ -14,86 +14,76 @@
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
       <div class="brand-text">
         <strong>P'zzazz Pizza - Staging</strong>
-        <span>Fresh • Fast • Friendly</span>
+        <small class="badge-staging">Staging</small>
       </div>
     </div>
-    <nav>
-      <a href="#menu">Menu</a>
-      <a href="#build">Build Your Own Pizza</a>
+    <nav class="nav">
+      <a href="./index.html" class="active">Home</a>
+      <a href="./login.html">Admin</a>
     </nav>
-    <button id="cartButton" class="cart-button" aria-label="Open cart">
-      🛒 <span id="cartCount">0</span>
+    <button id="cartButton" aria-label="Open cart" class="cart-btn">
+      Cart <span id="cartCount" class="pill">0</span>
     </button>
   </header>
 
   <main class="container">
-    <!-- Hero -->
-    <section id="hero" class="hero card">
-      <div>
-        <h1>Craving Pizza? Order Right Now!</h1>
-        <p>Customize your perfect pie or pick a house favorite.</p>
-        <p class="subtext">Add sides, check your total, and you’re set.</p>
+    <section class="filters card">
+      <div class="row gap">
+        <label>Category
+          <select id="categoryFilter"></select>
+        </label>
+        <label class="grow">Search
+          <input id="searchInput" placeholder="Search menu..." />
+        </label>
       </div>
     </section>
 
-    <!-- Menu -->
-    <section id="menu" class="card">
-      <div class="section-head">
-        <h2>Menu</h2>
-        <div class="filters">
-          <label>Category:
-            <select id="categoryFilter"></select>
-          </label>
-          <input id="searchInput" placeholder="Search pizzas, sides, or drinks..." />
-        </div>
-      </div>
-      <div id="menuGrid" class="grid"></div>
+    <section class="grid card" id="menuGrid" aria-live="polite">
+      <!-- Menu items render here -->
     </section>
 
-    <!-- Build Your Own -->
-    <section id="build" class="card">
-      <h2>Build Your Own Pizza</h2>
-      <div class="builder">
-        <div class="builder-row" style="gap:10px; flex-wrap:wrap;">
-          <label>Base:
-            <select id="baseSelect">
-              <option value="plain-cheese" selected>Plain Cheese</option>
-            </select>
-          </label>
-          <label>Size:
-            <select id="sizeSelect">
-              <option>Small</option>
-              <option>Medium</option>
-              <option>Large</option>
-            </select>
-          </label>
-          <label>Quantity:
-            <input type="number" id="qtyInput" min="1" value="1" />
-          </label>
-        </div>
-        <fieldset class="builder-row">
-          <legend>Toppings</legend>
-          <div id="toppingsWrap" class="chips"></div>
-        </fieldset>
-        <div class="builder-row between" style="justify-content:space-between; align-items:center;">
-          <div class="price">Est. Price: <strong id="estPrice">$0.00</strong></div>
-          <button id="addBuildBtn" class="primary">Add to Cart</button>
-        </div>
+    <section class="builder card">
+      <h2>Build Your Own</h2>
+      <div class="row">
+        <label>Base
+          <select id="baseSelect">
+            <option value="Thin">Thin</option>
+            <option value="Hand-Tossed">Hand-Tossed</option>
+            <option value="Deep Dish">Deep Dish</option>
+          </select>
+        </label>
+        <label>Size
+          <select id="sizeSelect">
+            <option>Small</option>
+            <option selected>Medium</option>
+            <option>Large</option>
+          </select>
+        </label>
+        <label>Qty
+          <input id="qtyInput" type="number" min="1" value="1" />
+        </label>
+      </div>
+
+      <div id="toppingsWrap" class="toppings"></div>
+
+      <div class="builder-footer">
+        <div>Estimated: <strong id="estPrice">$0.00</strong></div>
+        <button id="addBuildBtn" class="primary">Add to Cart</button>
       </div>
     </section>
   </main>
 
   <!-- Cart Drawer -->
-  <aside id="cartDrawer" class="drawer" aria-hidden="true">
+  <aside id="cartDrawer" class="drawer" aria-hidden="true" aria-label="Shopping cart">
     <header class="drawer-header">
-      <h3>Your Cart</h3>
+      <strong>Your Cart</strong>
       <button id="closeCart" aria-label="Close cart">✕</button>
     </header>
-    <div id="cartItems" class="cart-list"></div>
+    <div id="cartItems" class="cart-items"></div>
     <footer class="drawer-footer">
       <div class="totals">
-        <div>Subtotal: <span id="subTotal">$0.00</span></div>
-        <div>Tax: <span id="taxTotal">$0.00</span></div>
+        <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
+        <div>Tax: <strong id="taxTotal">$0.00</strong></div>
         <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
       </div>
       <div class="checkout-form">
