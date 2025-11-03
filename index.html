@@ -1,192 +1,102 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>P'zzazz Pizza</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="./assets/logo.svg" />
+  <link rel="stylesheet" href="./styles.css" />
   <script defer src="./app.js"></script>
-  <style>
-    body { font-family:sans-serif; margin:0; padding:0; background:#fff6ee; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#c6372f; color:white; }
-    .brand { display:flex; align-items:center; gap:8px; }
-    .logo { width:40px; }
-    nav a { color:white; text-decoration:none; margin-left:12px; }
-    .container { max-width:1000px; margin:20px auto; padding:0 12px; }
-    .search-bar { margin-bottom:12px; width:100%; padding:6px; font-size:1rem; border-radius:6px; border:1px solid #ccc; }
-    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
-    .menu-card { background:white; padding:8px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center; }
-    .menu-card img { width:100%; height:120px; object-fit:cover; border-radius:8px; }
-    .menu-info { margin:6px 0; font-size:0.9rem; }
-    .add-cart { background:#c6372f; color:white; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
-    #cartWrap { margin-top:12px; background:#fffdfa; padding:12px; border-radius:8px; }
-    #buildYourOwn { margin-top:12px; padding:12px; background:#fffdfa; border-radius:8px; }
-    .cart-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    .remove-cart { background:none; border:none; color:red; cursor:pointer; }
-    .inline { display:flex; gap:12px; margin-top:6px; }
-    .topping-checkbox { margin-right:6px; }
-  </style>
 </head>
 <body>
-
-<header class="topbar">
-  <div class="brand">
-    <img src="https://i.imgur.com/7vQtw8g.png" alt="Logo" class="logo">
-    <strong>P'zzazz Pizza</strong>
-  </div>
-  <nav>
-    <a href="#">Home</a>
-    <a href="./admin.html">Admin</a>
-    <a href="./payment.html">Checkout</a>
-  </nav>
-</header>
-
-<main class="container">
-
-  <input class="search-bar" type="text" id="searchInput" placeholder="Search menu...">
-
-  <h2>Menu</h2>
-  <div id="menuWrap" class="menu-grid"></div>
-
-  <h2>Build Your Own Pizza</h2>
-  <div id="buildYourOwn">
-    <div id="byoToppings"></div>
-    <div class="inline">
-      <div>Base: $8.00</div>
-      <div id="byoPrice">Total: $8.00</div>
-      <button id="addByoBtn" class="add-cart">Add to Cart</button>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
+      <div class="brand-text">
+        <strong>P'zzazz Pizza</strong>
+        <small class="badge-staging"></small>
+      </div>
     </div>
-  </div>
+    <nav class="nav">
+      <a href="./index.html" class="active">Home</a>
+      <a href="./login.html">Admin</a>
+    </nav>
+    <button id="cartButton" aria-label="Open cart" class="cart-btn">
+      Cart <span id="cartCount" class="pill">0</span>
+    </button>
+  </header>
 
-  <h2>Cart</h2>
-  <div id="cartWrap"></div>
-  <div class="inline">
-    <div>Subtotal: <strong id="sumSub">$0.00</strong></div>
-    <div>Tax: <strong id="sumTax">$0.00</strong></div>
-    <div>Total: <strong id="sumTotal">$0.00</strong></div>
-  </div>
+  <main class="container">
+    <section class="filters card">
+      <div class="row gap">
+        <label>Category
+          <select id="categoryFilter"></select>
+        </label>
+        <label class="grow">Search
+          <input id="searchInput" placeholder="Search menu..." />
+        </label>
+      </div>
+    </section>
 
-</main>
+    <section class="grid card" id="menuGrid" aria-live="polite">
+      <!-- Menu items render here -->
+    </section>
 
-<footer style="text-align:center; padding:12px; background:#0d162a; color:white;">
-  © <span id="year"></span> P'zzazz Pizza
-</footer>
+    <section class="builder card">
+      <h2>Build Your Own</h2>
+      <div class="row">
+        <label>Base
+          <select id="baseSelect">
+            <option value="Thin">Thin</option>
+            <option value="Hand-Tossed">Hand-Tossed</option>
+            <option value="Deep Dish">Deep Dish</option>
+          </select>
+        </label>
+        <label>Size
+          <select id="sizeSelect">
+            <option>Small</option>
+            <option selected>Medium</option>
+            <option>Large</option>
+          </select>
+        </label>
+        <label>Qty
+          <input id="qtyInput" type="number" min="1" value="1" />
+        </label>
+      </div>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
+      <div id="toppingsWrap" class="toppings"></div>
 
-  // Example Build Your Own toppings
-  const byoToppingsList = [
-    {name:'Mozzarella', price:1},
-    {name:'Pepperoni', price:1.25},
-    {name:'Mushrooms', price:0.9},
-    {name:'Olives', price:0.8},
-    {name:'Onions', price:0.7}
-  ];
+      <div class="builder-footer">
+        <div>Estimated: <strong id="estPrice">$0.00</strong></div>
+        <button id="addBuildBtn" class="primary">Add to Cart</button>
+      </div>
+    </section>
+  </main>
 
-  const byoToppingsDiv = document.getElementById('byoToppings');
-  byoToppingsList.forEach((t,i)=>{
-    const label = document.createElement('label');
-    label.innerHTML = `<input class="topping-checkbox" type="checkbox" data-price="${t.price}"> ${t.name} (+$${t.price})`;
-    byoToppingsDiv.appendChild(label);
-    byoToppingsDiv.appendChild(document.createElement('br'));
-  });
-
-  const basePrice = 8;
-  const byoPriceDiv = document.getElementById('byoPrice');
-
-  function updateByoPrice(){
-    const total = basePrice + Array.from(document.querySelectorAll('.topping-checkbox'))
-      .filter(c=>c.checked).reduce((s,c)=>s+parseFloat(c.dataset.price),0);
-    byoPriceDiv.textContent = 'Total: $'+total.toFixed(2);
-  }
-
-  document.querySelectorAll('.topping-checkbox').forEach(c=>c.addEventListener('change', updateByoPrice));
-
-  // Cart logic
-  const cartWrap = document.getElementById('cartWrap');
-  const sumSub = document.getElementById('sumSub');
-  const sumTax = document.getElementById('sumTax');
-  const sumTotal = document.getElementById('sumTotal');
-
-  let cart = JSON.parse(localStorage.getItem('pizza.cart')||'[]');
-
-  function renderCart(){
-    cartWrap.innerHTML = '';
-    if(!cart.length) cartWrap.innerHTML = '<em>Cart is empty.</em>';
-    cart.forEach((item,idx)=>{
-      const row = document.createElement('div');
-      row.className = 'cart-row';
-      row.innerHTML = `<div>${item.name} x${item.qty}</div>
-                       <div>$${item.total.toFixed(2)}</div>
-                       <button class="remove-cart" data-idx="${idx}">✕</button>`;
-      cartWrap.appendChild(row);
-    });
-
-    document.querySelectorAll('.remove-cart').forEach(b=>{
-      b.addEventListener('click',()=>{
-        cart.splice(b.dataset.idx,1);
-        localStorage.setItem('pizza.cart',JSON.stringify(cart));
-        renderCart();
-        updateTotals();
-      });
-    });
-    updateTotals();
-  }
-
-  function updateTotals(){
-    const sub = cart.reduce((s,i)=>s+i.total,0);
-    const tax = sub*0.07;
-    sumSub.textContent = '$'+sub.toFixed(2);
-    sumTax.textContent = '$'+tax.toFixed(2);
-    sumTotal.textContent = '$'+(sub+tax).toFixed(2);
-  }
-
-  document.getElementById('addByoBtn').addEventListener('click',()=>{
-    const selected = Array.from(document.querySelectorAll('.topping-checkbox')).filter(c=>c.checked).map(c=>c.parentNode.textContent.trim());
-    const total = basePrice + selected.reduce((s,t)=>s+byoToppingsList.find(x=>t.startsWith(x.name)).price,0);
-    cart.push({name:'Build Your Own ('+selected.join(', ')+')', qty:1, total});
-    localStorage.setItem('pizza.cart',JSON.stringify(cart));
-    renderCart();
-  });
-
-  // Example menu items
-  const menuItems = [
-    {name:'Heavy Hitter', price:12.99, img:'https://i.imgur.com/4M7IWwP.jpg'},
-    {name:'Slice of Summer', price:11.5, img:'https://i.imgur.com/Oq1J0l1.jpg'},
-    {name:'Veggie Delight', price:12, img:'https://i.imgur.com/FbUjBvB.jpg'}
-  ];
-
-  const menuWrap = document.getElementById('menuWrap');
-  menuItems.forEach((m,i)=>{
-    const card = document.createElement('div');
-    card.className='menu-card';
-    card.innerHTML = `<img src="${m.img}" alt="${m.name}">
-                      <div class="menu-info"><strong>${m.name}</strong><br>$${m.price}</div>
-                      <button class="add-cart" data-idx="${i}">Add to Cart</button>`;
-    menuWrap.appendChild(card);
-  });
-
-  document.querySelectorAll('.add-cart').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const i = b.dataset.idx;
-      cart.push({name:menuItems[i].name, qty:1, total:menuItems[i].price});
-      localStorage.setItem('pizza.cart',JSON.stringify(cart));
-      renderCart();
-    });
-  });
-
-  renderCart();
-
-  // Search filter
-  document.getElementById('searchInput').addEventListener('input', e=>{
-    const term = e.target.value.toLowerCase();
-    document.querySelectorAll('#menuWrap .menu-card').forEach(card=>{
-      const name = card.querySelector('.menu-info strong').textContent.toLowerCase();
-      card.style.display = name.includes(term)?'':'none';
-    });
-  });
-</script>
-
+  <!-- Cart Drawer -->
+  <aside id="cartDrawer" class="drawer" aria-hidden="true" aria-label="Shopping cart">
+    <header class="drawer-header">
+      <strong>Your Cart</strong>
+      <button id="closeCart" aria-label="Close cart">✕</button>
+    </header>
+    <div id="cartItems" class="cart-items"></div>
+    <footer class="drawer-footer">
+      <div class="totals">
+        <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
+        <div>Tax: <strong id="taxTotal">$0.00</strong></div>
+        <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
+      </div>
+      <div class="checkout-form">
+        <label>Name: <input id="custName" placeholder="Your name" /></label>
+        <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
+        <label>Address: <input id="custAddress" placeholder="Delivery address" /></label>
+      </div>
+      <div class="actions">
+        <button id="checkoutBtn" class="primary">Checkout</button>
+        <button id="clearCart" class="secondary">Clear Cart</button>
+      </div>
+    </footer>
+  </aside>
 </body>
 </html>
