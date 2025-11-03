@@ -12,39 +12,37 @@
   <header class="topbar">
     <div class="brand">
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
-      <div class="brand-text"><strong>P'zzazz Pizza</strong></div>
+      <div class="brand-text">
+        <strong>P'zzazz Pizza</strong>
+        <small class="badge-staging">Staging</small>
+      </div>
     </div>
     <nav class="nav">
       <a href="./index.html" class="active">Home</a>
       <a href="./login.html">Admin</a>
+      <a href="./payment.html">Cart <span id="cartCount">(0)</span></a>
     </nav>
   </header>
 
   <main class="container">
-    <section id="menuGrid" class="grid"></section>
-  </main>
+    <section id="menuSection"></section>
 
-  <!-- Mini Cart Overlay -->
-  <div id="cartOverlay" style="position:fixed; top:0; right:-320px; width:300px; height:100%; background:var(--surface,#fffdfa); box-shadow:-2px 0 8px rgba(0,0,0,0.2); padding:16px; transition: right 0.3s; display:flex; flex-direction:column; z-index:1000;">
-    <h3>Cart</h3>
-    <div id="cartItems" style="flex-grow:1; overflow-y:auto; margin-bottom:10px;"></div>
-    <div style="margin-top:auto;">
-      <div style="margin-bottom:6px;">
+    <section class="card" id="cartSection" style="display:none;">
+      <h2>Your Cart</h2>
+      <div id="cartItems"></div>
+      <div class="inline">
         <div>Subtotal: <strong id="cartSub">$0.00</strong></div>
         <div>Tax: <strong id="cartTax">$0.00</strong></div>
         <div>Total: <strong id="cartTotal">$0.00</strong></div>
       </div>
-      <button id="checkoutBtn" class="primary" style="width:100%;">Go to Payment</button>
-      <button id="closeCartBtn" class="ghost" style="width:100%; margin-top:6px;">Close</button>
-    </div>
-  </div>
-
-  <!-- Cart Toggle Button -->
-  <button id="openCartBtn" style="position:fixed; bottom:16px; right:16px; z-index:999; padding:10px 16px; border:none; border-radius:8px; background:var(--brand,#c6372f); color:#fff; font-weight:700;">Cart 🛒</button>
+      <button class="primary" id="checkoutBtn">Checkout</button>
+    </section>
+  </main>
 
   <footer class="site-footer">
     <small>© <span id="year"></span> P'zzazz Pizza</small>
   </footer>
+
   <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
 </body>
 </html>
