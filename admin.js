@@ -172,3 +172,116 @@ document.getElementById("refreshMenuBtn")?.addEventListener("click", ()=>{
   alert("Menu saved. Reloading the app to reflect changes…");
   window.location.href = "./index.html";
 });
+/* =========================
+   Admin: Recent Orders view
+   ========================= */
+const LS_ORDERS_KEY = "pizza.orders";
+
+function getOrders() {
+  try { return JSON.parse(localStorage.getItem(LS_ORDERS_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function setOrders(list) {
+  try { localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(list)); }
+  catch(e) { console.error("Failed to save orders:", e); }
+}
+
+function currency(n){ return `$${(Number(n)||0).toFixed(2)}`; }
+
+function orderRow(o, idx){
+  const when = o.date ? new Date(o.date) : null;
+  const whenStr = when ? when.toLocaleString() : "(unknown time)";
+  const items = Array.isArray(o.items) ? o.items.map(i => {
+    const size = i.size ? ` (${i.size})` : "";
+    const line = `${i.name}${size} x${i.qty}`;
+    return `<div class="muted">${line} — ${currency((i.price||0)* (i.qty||1))}</div>`;
+  }).join("") : "<div class='muted'>(no items)</div>";
+
+  const name = (o.customer?.name || "(Guest)");
+  const phone = (o.customer?.phone || "-");
+  const addr = (o.customer?.address || "-");
+  const sub = currency(o.totals?.sub || 0);
+  const tax = currency(o.totals?.tax || 0);
+  const tot = currency(o.totals?.total || 0);
+
+  return `
+    <div class="admin-row" data-order-index="${idx}" style="align-items:flex-start; grid-template-columns: 1.2fr 1fr .8fr .5fr .2fr;">
+      <div>
+        <div><strong>${o.id || "(no id)"}</strong></div>
+        <div class="muted">${whenStr}</div>
+      </div>
+      <div>
+        <div><strong>${name}</strong></div>
+        <div class="muted">Phone: ${phone}</div>
+        <div class="muted">Address: ${addr}</div>
+      </div>
+      <div>
+        ${items}
+      </div>
+      <div>
+        <div>Sub: <strong>${sub}</strong></div>
+        <div>Tax: <strong>${tax}</strong></div>
+        <div>Total: <strong>${tot}</strong></div>
+      </div>
+      <div>
+        <button class="ghost" data-del="${idx}">Del</button>
+      </div>
+    </div>`;
+}
+
+function renderOrders(){
+  const wrap = document.getElementById("ordersWrap");
+  if(!wrap) return;
+
+  const orders = getOrders().slice().reverse(); // newest first
+  if(!orders.length){
+    wrap.innerHTML = `<div class="muted" style="padding:8px;">No orders yet.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="admin-row header-row" style="grid-template-columns: 1.2fr 1fr .8fr .5fr .2fr;">
+      <div>Order</div><div>Customer</div><div>Items</div><div>Totals</div><div>Actions</div>
+    </div>
+    ${orders.map((o, i) => orderRow(o, i)).join("")}
+  `;
+
+  // Delete single order (from the display array which is reversed)
+  wrap.querySelectorAll("button[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const revIndex = Number(btn.dataset.del);     // index in reversed array
+      const full = getOrders();
+      const idx = full.length - 1 - revIndex;       // map back to original order
+      full.splice(idx, 1);
+      setOrders(full);
+      renderOrders();
+    });
+  });
+}
+
+function bindOrdersActions(){
+  document.getElementById("clearOrdersBtn")?.addEventListener("click", ()=>{
+    if(confirm("Clear ALL orders stored in this browser?")){
+      localStorage.removeItem(LS_ORDERS_KEY);
+      renderOrders();
+    }
+  });
+
+  document.getElementById("exportOrdersBtn")?.addEventListener("click", ()=>{
+    const data = localStorage.getItem(LS_ORDERS_KEY) || "[]";
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href: url, download: `orders-${new Date().toISOString().slice(0,19)}.json`
+    });
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+}
+
+// Kick off on load
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderOrders();
+  bindOrdersActions();
+});
