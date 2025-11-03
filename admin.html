@@ -28,6 +28,7 @@
   </header>
 
   <main class="container">
+    <!-- Menu Items -->
     <section class="card">
       <h2>Menu Items</h2>
       <div id="adminMenuTable" class="admin-table"></div>
@@ -39,11 +40,13 @@
       <small class="note">Admin changes persist to browser <code>localStorage</code></small>
     </section>
 
+    <!-- Toppings -->
     <section class="card">
       <h2>Toppings</h2>
       <div id="adminToppings" class="admin-table"></div>
     </section>
 
+    <!-- Settings -->
     <section class="card">
       <h2>Settings</h2>
       <label>Tax Rate
@@ -55,32 +58,31 @@
       </div>
       <button id="saveSettingsBtn" class="primary">Save Settings</button>
     </section>
+
+    <!-- Recent Orders -->
+    <section class="card" id="ordersSection">
+      <h2>Recent Orders</h2>
+      <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px">
+        <small class="note">Orders are stored in this browser’s <code>localStorage</code> under <code>pizza.orders</code>.</small>
+        <div class="row" style="gap:8px">
+          <button id="exportOrdersBtn" class="ghost">Export JSON</button>
+          <button id="clearOrdersBtn" class="ghost">Clear Orders</button>
+        </div>
+      </div>
+      <div id="ordersWrap" class="admin-table"></div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <small>© <span id="year"></span> P'zzazz Pizza. Admin.</small>
   </footer>
 
-  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
   <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
     document.getElementById("signOutBtn")?.addEventListener("click", ()=>{
       localStorage.removeItem("authToken");
       location.href = "login.html";
     });
-    <!-- Recent Orders -->
-<section class="card" id="ordersSection">
-  <h2>Recent Orders</h2>
-  <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px">
-    <small class="note">Orders are stored in this browser’s <code>localStorage</code> under <code>pizza.orders</code>.</small>
-    <div class="row" style="gap:8px">
-      <button id="exportOrdersBtn" class="ghost">Export JSON</button>
-      <button id="clearOrdersBtn" class="ghost">Clear Orders</button>
-    </div>
-  </div>
-  <div id="ordersWrap" class="admin-table"></div>
-</section>
-
   </script>
-
 </body>
 </html>
