@@ -12,90 +12,39 @@
   <header class="topbar">
     <div class="brand">
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
-      <div class="brand-text">
-        <strong>P'zzazz Pizza</strong>
-        <small class="badge-staging"></small>
-      </div>
+      <div class="brand-text"><strong>P'zzazz Pizza</strong></div>
     </div>
     <nav class="nav">
       <a href="./index.html" class="active">Home</a>
       <a href="./login.html">Admin</a>
     </nav>
-    <button id="cartButton" aria-label="Open cart" class="cart-btn">
-      Cart <span id="cartCount" class="pill">0</span>
-    </button>
   </header>
 
   <main class="container">
-    <section class="filters card">
-      <div class="row gap">
-        <label>Category
-          <select id="categoryFilter"></select>
-        </label>
-        <label class="grow">Search
-          <input id="searchInput" placeholder="Search menu..." />
-        </label>
-      </div>
-    </section>
-
-    <section class="grid card" id="menuGrid" aria-live="polite">
-      <!-- Menu items render here -->
-    </section>
-
-    <section class="builder card">
-      <h2>Build Your Own</h2>
-      <div class="row">
-        <label>Base
-          <select id="baseSelect">
-            <option value="Thin">Thin</option>
-            <option value="Hand-Tossed">Hand-Tossed</option>
-            <option value="Deep Dish">Deep Dish</option>
-          </select>
-        </label>
-        <label>Size
-          <select id="sizeSelect">
-            <option>Small</option>
-            <option selected>Medium</option>
-            <option>Large</option>
-          </select>
-        </label>
-        <label>Qty
-          <input id="qtyInput" type="number" min="1" value="1" />
-        </label>
-      </div>
-
-      <div id="toppingsWrap" class="toppings"></div>
-
-      <div class="builder-footer">
-        <div>Estimated: <strong id="estPrice">$0.00</strong></div>
-        <button id="addBuildBtn" class="primary">Add to Cart</button>
-      </div>
-    </section>
+    <section id="menuGrid" class="grid"></section>
   </main>
 
-  <!-- Cart Drawer -->
-  <aside id="cartDrawer" class="drawer" aria-hidden="true" aria-label="Shopping cart">
-    <header class="drawer-header">
-      <strong>Your Cart</strong>
-      <button id="closeCart" aria-label="Close cart">✕</button>
-    </header>
-    <div id="cartItems" class="cart-items"></div>
-    <footer class="drawer-footer">
-      <div class="totals">
-        <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
-        <div>Tax: <strong id="taxTotal">$0.00</strong></div>
-        <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
+  <!-- Mini Cart Overlay -->
+  <div id="cartOverlay" style="position:fixed; top:0; right:-320px; width:300px; height:100%; background:var(--surface,#fffdfa); box-shadow:-2px 0 8px rgba(0,0,0,0.2); padding:16px; transition: right 0.3s; display:flex; flex-direction:column; z-index:1000;">
+    <h3>Cart</h3>
+    <div id="cartItems" style="flex-grow:1; overflow-y:auto; margin-bottom:10px;"></div>
+    <div style="margin-top:auto;">
+      <div style="margin-bottom:6px;">
+        <div>Subtotal: <strong id="cartSub">$0.00</strong></div>
+        <div>Tax: <strong id="cartTax">$0.00</strong></div>
+        <div>Total: <strong id="cartTotal">$0.00</strong></div>
       </div>
-      <div class="checkout-form">
-        <label>Name: <input id="custName" placeholder="Your name" /></label>
-        <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
-        <label>Address: <input id="custAddress" placeholder="Delivery address" /></label>
-      </div>
-      <div class="actions">
-        <button id="checkoutBtn" class="primary">Checkout</button>
-        <button id="clearCart" class="secondary">Clear Cart</button>
-      </div>
-    </footer>
-  </aside>
+      <button id="checkoutBtn" class="primary" style="width:100%;">Go to Payment</button>
+      <button id="closeCartBtn" class="ghost" style="width:100%; margin-top:6px;">Close</button>
+    </div>
+  </div>
+
+  <!-- Cart Toggle Button -->
+  <button id="openCartBtn" style="position:fixed; bottom:16px; right:16px; z-index:999; padding:10px 16px; border:none; border-radius:8px; background:var(--brand,#c6372f); color:#fff; font-weight:700;">Cart 🛒</button>
+
+  <footer class="site-footer">
+    <small>© <span id="year"></span> P'zzazz Pizza</small>
+  </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
 </body>
 </html>
