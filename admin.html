@@ -67,6 +67,19 @@
       localStorage.removeItem("authToken");
       location.href = "login.html";
     });
+    <!-- Recent Orders -->
+<section class="card" id="ordersSection">
+  <h2>Recent Orders</h2>
+  <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px">
+    <small class="note">Orders are stored in this browser’s <code>localStorage</code> under <code>pizza.orders</code>.</small>
+    <div class="row" style="gap:8px">
+      <button id="exportOrdersBtn" class="ghost">Export JSON</button>
+      <button id="clearOrdersBtn" class="ghost">Clear Orders</button>
+    </div>
+  </div>
+  <div id="ordersWrap" class="admin-table"></div>
+</section>
+
   </script>
 
 </body>
