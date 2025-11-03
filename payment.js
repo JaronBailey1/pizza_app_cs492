@@ -2,23 +2,23 @@ const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 const LS_ORDERS_KEY = "pizza.orders";
 
-function currency(n){ return `$${n.toFixed(2)}`; }
+function currency(n){ return `$${(n||0).toFixed(2)}`; }
 function getMenu(){ try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch { return null; } }
 function getCart(){ try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } catch { return []; } }
-
-function clearCart(){ localStorage.setItem(LS_CART_KEY, "[]"); }
+function saveOrders(list){ localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(list)); }
+function clearCart(){ localStorage.setItem(LS_CART_KEY,"[]"); }
 
 function renderSummary(){
   const menu = getMenu();
   const taxRate = menu?.taxRate ?? 0.07;
   const cart = getCart();
-
   const wrap = document.getElementById("orderItems");
-  wrap.innerHTML = cart.length ? cart.map(i => `
+
+  wrap.innerHTML = cart.length ? cart.map(i=>`
     <div class="cart-row">
       <div>
         <div><strong>${i.name}</strong> × ${i.qty}</div>
-        ${i.toppings?.length ? `<small>${i.toppings.join(", ")}</small>` : ``}
+        <small>${i.toppings?.length ? i.toppings.join(", ") : ""}</small>
         <small>${currency(i.unit)} each</small>
       </div>
       <div><strong>${currency(i.total)}</strong></div>
@@ -26,20 +26,19 @@ function renderSummary(){
   `).join("") : `<em>Your cart is empty.</em>`;
 
   const subtotal = cart.reduce((s,i)=>s+i.total,0);
-  const tax = subtotal * taxRate;
+  const tax = subtotal*taxRate;
   document.getElementById("sumSub").textContent = currency(subtotal);
   document.getElementById("sumTax").textContent = currency(tax);
-  document.getElementById("sumTotal").textContent = currency(subtotal + tax);
+  document.getElementById("sumTotal").textContent = currency(subtotal+tax);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const cust = JSON.parse(localStorage.getItem("pizza.customer") || "{}");
+document.addEventListener("DOMContentLoaded", ()=>{
   renderSummary();
-  
+
   const form = document.getElementById("payForm");
   const result = document.getElementById("payResult");
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", e=>{
     e.preventDefault();
     const cart = getCart();
     if(!cart.length){
@@ -50,20 +49,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const menu = getMenu();
     const taxRate = menu?.taxRate ?? 0.07;
     const subtotal = cart.reduce((s,i)=>s+i.total,0);
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
-    const orderId = "ORD-" + Math.random().toString(36).slice(2,8).toUpperCase();
+    const tax = subtotal*taxRate;
+    const total = subtotal+tax;
 
-    // Save order
+    const orderId = "ORD-"+Math.random().toString(36).slice(2,8).toUpperCase();
+    const customer = {
+      name: document.getElementById("cardName").value || "(Guest)",
+      phone: "-",
+      address: "-"
+    };
+
+    // Save order locally
     const existing = JSON.parse(localStorage.getItem(LS_ORDERS_KEY) || "[]");
     existing.push({
       id: orderId,
       date: new Date().toISOString(),
-      customer: cust,
+      customer,
       items: cart,
-      totals: { sub: subtotal, tax, total }
+      totals:{sub:subtotal,tax,total}
     });
-    localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(existing));
+    saveOrders(existing);
 
     clearCart();
     renderSummary();
