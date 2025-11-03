@@ -2,38 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Staff Login • P'zzazz Pizza</title>
+  <title>Admin Login • P'zzazz Pizza</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <style>
-    .login-card{max-width:420px;margin:10vh auto;padding:16px;border-radius:12px;border:1px solid var(--border);background:var(--panel);}
-    form{display:grid;gap:12px}
-  </style>
+  <script defer src="./login.js"></script>
 </head>
 <body>
-  <main class="login-card">
-    <h1>Staff Login</h1>
-    <form id="loginForm">
-      <label>Username <input id="user" required placeholder="admin"/></label>
-      <label>Password <input id="pass" type="password" required placeholder="•••••••"/></label>
-      <button class="primary" type="submit">Sign In</button>
-      <small class="note">Demo credentials: admin / admin123</small>
-    </form>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
+      <div class="brand-text">
+        <strong>Admin Login</strong>
+        <small class="badge-staging">Staging</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="./index.html">Home</a>
+      <a href="./login.html" class="active">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" style="max-width:400px; margin:auto;">
+      <h2>Sign In</h2>
+      <form id="loginForm">
+        <label>Username
+          <input id="username" required />
+        </label>
+        <label>Password
+          <input id="password" type="password" required />
+        </label>
+        <button class="primary" type="submit">Login</button>
+        <small class="note">This is a mock login; credentials are stored locally for demo.</small>
+      </form>
+      <div id="loginResult" style="margin-top:12px;"></div>
+    </section>
   </main>
-  <script>
-    const DEMO_USER="admin", DEMO_PASS="admin123", TOKEN_KEY="authToken";
-    document.getElementById("loginForm").addEventListener("submit",(e)=>{
-      e.preventDefault();
-      const u=document.getElementById("user").value.trim();
-      const p=document.getElementById("pass").value;
-      if(u===DEMO_USER && p===DEMO_PASS){
-        localStorage.setItem(TOKEN_KEY,"ok");
-        location.href="admin.html";
-      }else{
-        alert("Invalid credentials (try admin / admin123)");
-      }
-    });
-  </script>
+
+  <footer class="site-footer">
+    <small>© <span id="year"></span> P'zzazz Pizza</small>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
 </body>
 </html>
