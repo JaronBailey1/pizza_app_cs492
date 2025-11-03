@@ -1,117 +1,144 @@
-// Constants
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
-// Seed menu
-function getSeedMenu(){
-  return {
+function currency(n){ return `$${n.toFixed(2)}`; }
+function getMenu(){ 
+  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || seedMenu(); } 
+  catch { return seedMenu(); } 
+}
+function saveMenu(menu){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(menu)); }
+
+function getCart(){ 
+  try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } 
+  catch { return []; } 
+}
+function saveCart(cart){ localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)); }
+
+function seedMenu(){
+  const m = {
     categories: ["specialty","build","sides","drinks"],
-    items: [
-      {id:"pep-supreme", name:"Heavy Hitter", basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=80"},
-      {id:"margherita", name:"Slice of Summer", basePrice:11.5, category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.", active:true, img:"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=80"},
-      {id:"veggie-delight", name:"Veggie Delight", basePrice:12, category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty tomato sauce.", active:true, img:"https://meatfreemondays.com/wp-content/uploads/2020/01/Mziuri-Vegetarian-Pizza-RS-N.jpg"}
+    items:[
+      {id:"pep-supreme", name:"Heavy Hitter", basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"https://source.unsplash.com/400x300/?pepperoni,pizza"},
+      {id:"margherita", name:"Slice of Summer", basePrice:11.5, category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.", active:true, img:"https://source.unsplash.com/400x300/?margherita,pizza"},
+      {id:"veggie-delight", name:"Veggie Delight", basePrice:12, category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty tomato sauce.", active:true, img:"https://source.unsplash.com/400x300/?veggie,pizza"},
+      {id:"breadsticks", name:"Garlic Knots", basePrice:5, category:"sides", sizes:["Single","Pack"], desc:"Soft garlic knots with butter.", active:true, img:"https://source.unsplash.com/400x300/?breadsticks,garlic"},
+      {id:"cola", name:"Soda", basePrice:2.5, category:"drinks", sizes:["Can","Bottle"], desc:"Chilled soda drinks.", active:true, img:"https://source.unsplash.com/400x300/?soda,drink"}
     ],
-    toppings: [
+    toppings:[
       {name:"Mozzarella", price:1, active:true},
       {name:"Pepperoni", price:1.25, active:true},
       {name:"Mushrooms", price:0.9, active:true},
-      {name:"Olives", price:0.75, active:true},
-      {name:"Basil", price:0.5, active:true}
+      {name:"Onions", price:0.8, active:true}
     ],
-    sizeMultipliers:{Small:1, Medium:1.25, Large:1.5},
+    sizeMultipliers:{Small:1, Medium:1.35, Large:1.75},
     taxRate:0.07
   };
+  saveMenu(m);
+  return m;
 }
 
-// LocalStorage helpers
-function getMenu(){ 
-  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || getSeedMenu(); } 
-  catch { return getSeedMenu(); } 
-}
-function saveMenu(menu){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(menu)); }
-function getCart(){ try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } catch { return []; } }
-function saveCart(cart){ localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)); }
+/* ======= Render Menu ======= */
+function renderMenu(filter=""){
+  const menu = getMenu();
+  const grid = document.getElementById("menuGrid");
+  if(!grid) return;
 
-// Build Your Own interactive
+  const items = menu.items.filter(i=>i.active && i.name.toLowerCase().includes(filter.toLowerCase()));
+  grid.innerHTML = items.map(i=>`
+    <div class="menu-card" data-id="${i.id}">
+      <img src="${i.img}" alt="${i.name}" />
+      <strong>${i.name}</strong>
+      <p>${i.desc}</p>
+      <div>$${i.basePrice.toFixed(2)}</div>
+      <button class="addBtn">Add to Cart</button>
+    </div>
+  `).join("");
+
+  // Bind Add buttons
+  grid.querySelectorAll(".addBtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.closest(".menu-card").dataset.id;
+      addToCart(id);
+    });
+  });
+}
+
+/* ======= Build Your Own ======= */
 function renderBuildYourOwn(){
   const menu = getMenu();
   const wrap = document.getElementById("buildYourOwn");
   if(!wrap) return;
 
   wrap.innerHTML = `
-    <h3>Build Your Own Pizza</h3>
-    <label>Choose Base:
-      <select id="byoBase">
-        ${menu.items.filter(i=>i.category==="build").map(i=>`<option value="${i.id}">${i.name} ($${i.basePrice})</option>`).join("")}
-      </select>
-    </label>
-    <label>Size:
+    <h2>Build Your Own Pizza</h2>
+    <div class="menu-card">
+      <strong>Choose your size:</strong>
       <select id="byoSize">
         ${Object.keys(menu.sizeMultipliers).map(sz=>`<option value="${sz}">${sz}</option>`).join("")}
       </select>
-    </label>
-    <fieldset>
-      <legend>Toppings ($)</legend>
-      ${menu.toppings.map((t,idx)=>`
-        <label>
-          <input type="checkbox" data-idx="${idx}" /> ${t.name} (${t.price})
-        </label>
-      `).join("")}
-    </fieldset>
-    <div>Total: $<span id="byoTotal">0.00</span></div>
-    <button id="addByoCart">Add to Cart</button>
+      <strong>Select toppings:</strong>
+      <div id="byoToppings" style="display:flex; gap:8px; flex-wrap:wrap;">
+        ${menu.toppings.filter(t=>t.active).map(t=>`
+          <label style="display:flex; align-items:center; gap:4px;">
+            <input type="checkbox" value="${t.name}" data-price="${t.price}" /> ${t.name} (+$${t.price})
+          </label>
+        `).join("")}
+      </div>
+      <button id="byoAddBtn" class="primary">Add to Cart</button>
+    </div>
   `;
 
-  const baseEl = document.getElementById("byoBase");
-  const sizeEl = document.getElementById("byoSize");
-  const toppingEls = wrap.querySelectorAll("input[type=checkbox]");
-  const totalEl = document.getElementById("byoTotal");
-  const addBtn = document.getElementById("addByoCart");
+  document.getElementById("byoAddBtn").addEventListener("click",()=>{
+    const size = document.getElementById("byoSize").value;
+    const selectedToppings = Array.from(document.querySelectorAll("#byoToppings input:checked")).map(inp=>({name: inp.value, price: Number(inp.dataset.price)}));
+    const menuBasePrice = 10; // base for build your own
+    const sizeMult = menu.sizeMultipliers[size] || 1;
+    const total = (menuBasePrice*sizeMult) + selectedToppings.reduce((s,t)=>s+t.price,0);
 
-  function calcTotal(){
-    const base = menu.items.find(i=>i.id===baseEl.value);
-    const sizeMult = menu.sizeMultipliers[sizeEl.value] || 1;
-    let total = base.basePrice * sizeMult;
-    toppingEls.forEach(t => {
-      if(t.checked){
-        const tp = menu.toppings[Number(t.dataset.idx)];
-        total += tp.price;
-      }
-    });
-    totalEl.textContent = total.toFixed(2);
-    return total;
-  }
-
-  // Recalculate on change
-  [baseEl,sizeEl,...toppingEls].forEach(el => el.addEventListener("change", calcTotal));
-  calcTotal();
-
-  // Add to cart
-  addBtn.addEventListener("click",()=>{
     const cart = getCart();
-    const base = menu.items.find(i=>i.id===baseEl.value);
-    const size = sizeEl.value;
-    const selectedToppings = Array.from(toppingEls).filter(t=>t.checked).map(t=>menu.toppings[Number(t.dataset.idx)].name);
     cart.push({
-      id: base.id,
-      name: base.name,
+      id:"BYO-"+Date.now(),
+      name:"Build Your Own",
       size,
-      toppings: selectedToppings,
-      unit: calcTotal(),
-      total: calcTotal(),
-      qty: 1
+      toppings:selectedToppings.map(t=>t.name),
+      qty:1,
+      unit: total,
+      total: total
     });
     saveCart(cart);
-    alert("Pizza added to cart!");
+    renderCart();
+    alert("Added Build Your Own pizza to cart!");
   });
 }
 
-// Initialize
-document.addEventListener("DOMContentLoaded", ()=>{
-  // Seed menu if missing
-  if(!localStorage.getItem(LS_MENU_KEY)){
-    saveMenu(getSeedMenu());
-  }
+/* ======= Add to Cart ======= */
+function addToCart(id){
+  const menu = getMenu();
+  const item = menu.items.find(i=>i.id===id);
+  if(!item) return;
+  const cart = getCart();
+  cart.push({
+    id: item.id+"-"+Date.now(),
+    name: item.name,
+    qty:1,
+    unit: item.basePrice,
+    total: item.basePrice,
+    size: item.sizes?.[0] || ""
+  });
+  saveCart(cart);
+  renderCart();
+  alert(`Added ${item.name} to cart!`);
+}
 
+/* ======= Search ======= */
+const searchBar = document.getElementById("searchBar");
+searchBar?.addEventListener("input", (e)=>{
+  renderMenu(e.target.value);
+});
+
+/* ======= Initialize ======= */
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderMenu();
   renderBuildYourOwn();
+  renderCart();
 });
