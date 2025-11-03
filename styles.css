@@ -259,4 +259,166 @@ button.ghost,
   }
   .checkout-form label:nth-child(3) { grid-column: auto; } /* Address no longer spans */
 }
+/* ===============================
+   Global / Containers
+   =============================== */
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg, #fff6ee);
+  color: var(--text, #2b2b2b);
+  margin: 0;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--surface, #fffdfa);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+/* ===============================
+   Buttons
+   =============================== */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+button.primary {
+  background: var(--brand, #c6372f);
+  color: #fff;
+}
+
+button.primary:hover { opacity: 0.9; }
+button.ghost {
+  background: transparent;
+  border: 1px solid #ccc;
+}
+
+/* ===============================
+   Topbar / Nav
+   =============================== */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #0d162a;
+  color: #fff;
+}
+
+.nav a {
+  color: #fff;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+.nav a.active { font-weight: 700; }
+
+/* ===============================
+   Cart / Payment / Order Summary
+   =============================== */
+.cart-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.inline { display: flex; gap: 10px; flex-wrap: wrap; }
+
+#orderItems {
+  margin-bottom: 0.75rem;
+}
+
+.order-summary {
+  background:#0d162a;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.topping-badge {
+  display:inline-block;
+  background:#fde68a;
+  color:#7c2d12;
+  padding:2px 6px;
+  border-radius:6px;
+  font-size:0.8em;
+  margin:2px 4px 2px 0;
+}
+
+/* ===============================
+   Admin Tables
+   =============================== */
+.admin-table {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.admin-row.header-row {
+  font-weight: 700;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 6px;
+}
+
+/* Inputs inside admin */
+.admin-row input[type="text"],
+.admin-row input[type="number"] {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Size multipliers in settings */
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.size-row input {
+  width: 60px;
+  padding: 2px 4px;
+}
+
+/* Notes / muted text */
+.note, .muted { 
+  font-size: 0.8em; 
+  color: #666; 
+}
+
+/* Footer */
+.site-footer {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+  font-size: 0.8em;
+  color: #555;
+}
 
