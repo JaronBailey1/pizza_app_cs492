@@ -7,40 +7,92 @@
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
   <script defer src="./app.js"></script>
+  <style>
+    .menu-grid {display:grid; gap:16px; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); margin-bottom:24px;}
+    .menu-card {background:var(--surface); border-radius:12px; padding:12px; display:flex; flex-direction:column; align-items:center; text-align:center;}
+    .menu-card img {width:100%; border-radius:8px; margin-bottom:8px;}
+    .menu-card button {margin-top:auto;}
+    #cartWrap {position:fixed; top:60px; right:16px; width:300px; max-height:70vh; overflow-y:auto; background:var(--surface); padding:12px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+    #cartWrap h3 {margin-top:0;}
+    .cart-row {display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+    #searchBar {margin-bottom:16px; padding:8px; width:100%; max-width:400px; border-radius:6px; border:1px solid #ccc;}
+  </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
-      <div class="brand-text"><strong>P'zzazz Pizza</strong></div>
+      <div class="brand-text">
+        <strong>P'zzazz Pizza</strong>
+      </div>
     </div>
     <nav class="nav">
       <a href="./index.html" class="active">Home</a>
-      <a href="./admin.html">Admin</a>
+      <a href="./login.html">Admin</a>
     </nav>
-    <div class="cart-icon">
-      <a href="./payment.html">Cart (<span id="cartCount">0</span>)</a>
-    </div>
   </header>
 
   <main class="container">
-    <section class="card">
-      <input type="text" id="searchInput" placeholder="Search menu..." style="width:100%;padding:8px;margin-bottom:12px;" />
-      <div id="menuWrap" class="menu-grid"></div>
-    </section>
+    <input type="text" id="searchBar" placeholder="Search menu..." />
 
-    <section class="card" id="buildSection">
-      <h2>Build Your Own Pizza</h2>
-      <div id="buildWrap" class="menu-grid"></div>
-    </section>
+    <!-- Specialty / Sides / Drinks -->
+    <div id="menuGrid" class="menu-grid"></div>
+
+    <!-- Build Your Own -->
+    <div id="buildYourOwn"></div>
   </main>
+
+  <!-- Cart -->
+  <div id="cartWrap">
+    <h3>Your Cart</h3>
+    <div id="cartItems"></div>
+    <div class="inline">
+      <div>Subtotal: <strong id="cartSub">$0.00</strong></div>
+      <div>Tax: <strong id="cartTax">$0.00</strong></div>
+      <div>Total: <strong id="cartTotal">$0.00</strong></div>
+    </div>
+    <button id="checkoutBtn" class="primary">Go to Payment</button>
+  </div>
 
   <footer class="site-footer">
     <small>© <span id="year"></span> P'zzazz Pizza</small>
   </footer>
 
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear()
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const LS_CART_KEY = "pizza.cart";
+    function getCart(){ return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); }
+    function saveCart(cart){ localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)); }
+
+    function renderCart(){
+      const cart = getCart();
+      const wrap = document.getElementById("cartItems");
+      wrap.innerHTML = cart.length ? cart.map((i,idx)=>`
+        <div class="cart-row">
+          <div>${i.name} ${i.size ? '('+i.size+')':''} × ${i.qty}</div>
+          <div>$${i.total.toFixed(2)}</div>
+          <button data-idx="${idx}" class="ghost">Del</button>
+        </div>
+      `).join("") : `<em>Cart is empty</em>`;
+
+      cart.forEach((_,idx)=>{
+        wrap.querySelector(`button[data-idx="${idx}"]`)?.addEventListener("click",()=>{
+          const c = getCart();
+          c.splice(idx,1);
+          saveCart(c);
+          renderCart();
+        });
+      });
+
+      const sub = cart.reduce((s,i)=>s+i.total,0);
+      const tax = sub*0.07;
+      document.getElementById("cartSub").textContent = `$${sub.toFixed(2)}`;
+      document.getElementById("cartTax").textContent = `$${tax.toFixed(2)}`;
+      document.getElementById("cartTotal").textContent = `$${(sub+tax).toFixed(2)}`;
+    }
+
+    document.getElementById("checkoutBtn").addEventListener("click",()=>location.href="./payment.html");
   </script>
 </body>
 </html>
