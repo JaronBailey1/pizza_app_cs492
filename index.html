@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +6,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script defer src="./app.js"></script>
+  <script defer src="./index.js"></script>
+
+  <style>
+    /* Inline CSS for layout tweaks (can move to styles.css if preferred) */
+    .drawer-footer .actions {
+      margin-top: 1rem; /* adds space between address and buttons */
+    }
+
+    /* Basic example styles for drawer layout */
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 320px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .drawer-footer {
+      margin-top: auto;
+    }
+
+    .checkout-form label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .checkout-form input {
+      width: 100%;
+      padding: 0.4rem;
+      margin-top: 0.2rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .actions button {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.4rem;
+    }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -15,63 +72,33 @@
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
       <div class="brand-text">
         <strong>P'zzazz Pizza</strong>
-        <small class="badge-staging"></small>
       </div>
     </div>
     <nav class="nav">
       <a href="./index.html" class="active">Home</a>
-      <a href="./login.html">Admin</a>
+      <a href="./admin.html">Admin</a>
+      <a href="./payment.html">Cart (<span id="cartCount">0</span>)</a>
     </nav>
-    <button id="cartButton" aria-label="Open cart" class="cart-btn">
-      Cart <span id="cartCount" class="pill">0</span>
-    </button>
   </header>
 
   <main class="container">
-    <section class="filters card">
-      <div class="row gap">
-        <label>Category
-          <select id="categoryFilter"></select>
-        </label>
-        <label class="grow">Search
-          <input id="searchInput" placeholder="Search menu..." />
-        </label>
-      </div>
+    <section class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search menu items..." />
     </section>
 
-    <section class="grid card" id="menuGrid" aria-live="polite">
-      <!-- Menu items render here -->
-    </section>
+    <section id="menuCategories"></section>
 
-    <section class="builder card">
-      <h2>Build Your Own</h2>
-      <div class="row">
-        <label>Base
-          <select id="baseSelect">
-            <option value="Thin">Thin</option>
-            <option value="Hand-Tossed">Hand-Tossed</option>
-            <option value="Deep Dish">Deep Dish</option>
-          </select>
-        </label>
-        <label>Size
-          <select id="sizeSelect">
-            <option>Small</option>
-            <option selected>Medium</option>
-            <option>Large</option>
-          </select>
-        </label>
-        <label>Qty
-          <input id="qtyInput" type="number" min="1" value="1" />
-        </label>
+    <div id="cartPopup" class="cart-popup hidden">
+      <h3>Your Cart</h3>
+      <div id="cartItems"></div>
+      <div class="inline">
+        <div>Subtotal: <strong id="cartSub">$0.00</strong></div>
+        <div>Tax: <strong id="cartTax">$0.00</strong></div>
+        <div>Total: <strong id="cartTotal">$0.00</strong></div>
       </div>
-
-      <div id="toppingsWrap" class="toppings"></div>
-
-      <div class="builder-footer">
-        <div>Estimated: <strong id="estPrice">$0.00</strong></div>
-        <button id="addBuildBtn" class="primary">Add to Cart</button>
-      </div>
-    </section>
+      <button id="checkoutBtn" class="primary">Checkout</button>
+      <button id="closeCartBtn" class="ghost">Close</button>
+    </div>
   </main>
 
   <!-- Cart Drawer -->
@@ -80,7 +107,7 @@
       <strong>Your Cart</strong>
       <button id="closeCart" aria-label="Close cart">✕</button>
     </header>
-    <div id="cartItems" class="cart-items"></div>
+    <div id="cartItemsDrawer" class="cart-items"></div>
     <footer class="drawer-footer">
       <div class="totals">
         <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
@@ -92,14 +119,19 @@
         <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
         <label>Address: <input id="custAddress" placeholder="Delivery address" /></label>
       </div>
-      .drawer-footer .actions {
-  margin-top: 1rem; /* Adjust to your liking, e.g. 16px */
-}
       <div class="actions">
-        <button id="checkoutBtn" class="primary">Checkout</button>
+        <button id="checkoutDrawerBtn" class="primary">Checkout</button>
         <button id="clearCart" class="secondary">Clear Cart</button>
       </div>
     </footer>
   </aside>
+
+  <footer class="site-footer">
+    <small>© <span id="year"></span> P'zzazz Pizza</small>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
