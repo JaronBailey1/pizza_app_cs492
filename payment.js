@@ -4,6 +4,17 @@ const LS_CART_KEY = "pizza.cart";
 function currency(n){ return `$${n.toFixed(2)}`; }
 function getMenu(){ try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } catch { return null; } }
 function getCart(){ try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } catch { return []; } }
+// Save the order locally before clearing cart
+const existing = JSON.parse(localStorage.getItem("pizza.orders") || "[]");
+existing.push({
+  id: orderId,
+  date: new Date().toISOString(),
+  customer: cust,
+  items: cart,
+  totals: { sub, tax, total }
+});
+localStorage.setItem("pizza.orders", JSON.stringify(existing));
+
 function clearCart(){ localStorage.setItem(LS_CART_KEY, "[]"); }
 
 function renderSummary(){
