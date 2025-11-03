@@ -18,7 +18,7 @@ body {
   color: var(--text);
 }
 
-/* Topbar: warmer wood-like background */
+/* Topbar */
 .topbar {
   position: sticky; top:0; z-index: 20;
   display:flex; align-items:center; justify-content:space-between;
@@ -35,7 +35,10 @@ body {
 .topbar nav a { color: var(--text); margin-right:6px; text-decoration:none; font-weight:600; padding:6px 8px; border-radius:8px; }
 .topbar nav a:hover { background: rgba(198,55,47,0.06); color: var(--brand); }
 
-/* Browse button next to Menu — secondary style */
+/* Buttons */
+button { cursor:pointer; border-radius:12px; padding:10px 14px; border:1px solid var(--border); background:transparent; color:var(--text); }
+button.primary { background: var(--brand); color: var(--brand-ink); border:none; font-weight:700; box-shadow: 0 6px 18px rgba(198,55,47,0.12); }
+button.ghost { background:transparent; color:var(--muted); border:1px solid rgba(0,0,0,0.04); }
 button.secondary {
   background: transparent;
   color: var(--brand);
@@ -44,6 +47,7 @@ button.secondary {
   border-radius:8px;
   font-weight:700;
 }
+button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
 
 /* Container & cards */
 .container { max-width:1100px; margin: 24px auto; padding: 0 16px; }
@@ -55,14 +59,13 @@ button.secondary {
 .row { display:flex; }
 .gap { gap: 10px; }
 
+/* Hero section */
 .hero { display:flex; align-items:center; min-height: 180px; background: linear-gradient(120deg, rgba(198,55,47,0.03), rgba(255,242,230,0.03)); }
 .hero h1 { margin: 0 0 8px; font-size: 1.8rem; color: #1f1f1f; }
 .hero p { color: var(--muted); margin: 0 0 14px; max-width: 60ch; }
 
-.grid {
-  display:grid; gap:14px;
-  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
-}
+/* Grid & items */
+.grid { display:grid; gap:14px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); }
 .item {
   background: linear-gradient(180deg, rgba(198,55,47,0.02), rgba(255,244,234,0.02));
   border:1px solid var(--border); border-radius:14px; overflow:hidden;
@@ -73,30 +76,23 @@ button.secondary {
 .item .content { padding:12px; display:flex; flex-direction:column; gap:8px; }
 .price { color: var(--brand); font-weight:700; }
 
-/* Buttons */
-button { cursor:pointer; border-radius:12px; padding:10px 14px; border:1px solid var(--border); background:transparent; color:var(--text); }
-button.primary { background: var(--brand); color: var(--brand-ink); border:none; font-weight:700; box-shadow: 0 6px 18px rgba(198,55,47,0.12); }
-button.ghost { background:transparent; color:var(--muted); border:1px solid rgba(0,0,0,0.04); }
-button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
-
-/* Cart button */
-.cart-button { background:transparent; border:1px solid var(--border); padding:8px 12px; border-radius:12px; color:var(--text); }
-
-/* Filters & inputs */
-.section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.filters { display:flex; gap:12px; margin: 6px 0 8px; flex-wrap:wrap; }
-.filters input, .filters select, input, select {
-  background: #fff; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px;
-  color: var(--text);
+/* Menu headers (category titles) */
+.menu-header {
+  grid-column: 1/-1;
+  font-size: 1.2rem;
+  font-weight:700;
+  padding:4px 0;
+  margin-top:14px;
+  margin-bottom:6px;
+  border-bottom: 1px dashed var(--border);
 }
 
-/* Builder */
-.builder .builder-row { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
-.builder .between { justify-content: space-between; }
-.chips { display:flex; gap:8px; flex-wrap:wrap; }
-.chips label { background:#fff; border:1px solid var(--border); padding:6px 10px; border-radius:999px; color:var(--text); }
+/* Inputs & filters */
+input, select { background: #fff; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+.section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.filters { display:flex; gap:12px; margin: 6px 0 8px; flex-wrap:wrap; }
 
-/* Drawer/cart */
+/* Cart drawer */
 .drawer {
   position: fixed; top:0; right:-420px; width: 380px; max-width: 92vw; height:100vh;
   background:#fff; border-left:1px solid var(--border); transition:right .25s ease;
@@ -109,26 +105,47 @@ button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
 .cart-row { display:flex; justify-content:space-between; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
 .cart-row small { color: var(--muted); }
 
+/* Customer delivery form in cart drawer */
+.drawer-footer .delivery {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.drawer-footer .delivery label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  gap: 2px;
+}
+
+/* Horizontal toppings layout */
+#toppingsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#toppingsWrap label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fffdfa;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+#toppingsWrap input[type=checkbox] {
+  margin: 0;
+}
+
 /* Footer */
 .site-footer { text-align:center; color: var(--muted); padding: 18px 12px; }
-
-/* Browse modal overrides to match pizza theme (will override the inline JS-inserted styles) */
-.browse-modal-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.42); display:flex; align-items:center; justify-content:center; z-index:10000;
-}
-.browse-modal {
-  background: linear-gradient(180deg, #fffefe, #fff7f2);
-  width: 90%; max-width:900px; max-height:80vh; overflow:auto; border-radius:8px; padding:18px;
-  box-shadow: 0 14px 30px rgba(0,0,0,0.12); position:relative; border: 1px solid rgba(198,55,47,0.06);
-}
-.browse-modal h2{margin:0 0 8px 0; color:var(--text);}
-.browse-modal .close { position:absolute; right:20px; top:14px; background:transparent; border:none; font-size:20px; cursor:pointer; color:var(--muted); }
-.browse-list { display:flex; flex-direction:column; gap:12px; padding-top:6px; }
-.browse-item { display:flex; gap:12px; align-items:flex-start; border-bottom:1px solid rgba(0,0,0,0.04); padding-bottom:8px; }
-.browse-item img { width:88px; height:64px; object-fit:cover; border-radius:6px; }
-.browse-item .meta { flex:1; }
-.browse-item .meta h3{margin:0 0 6px 0; color: var(--text); }
-.browse-item .price { color: var(--brand); font-weight:700; }
 
 /* Small responsive tweaks */
 @media (max-width:600px){
@@ -136,3 +153,110 @@ button:focus { outline: 2px solid rgba(198,55,47,0.18); outline-offset: 2px; }
   .hero h1 { font-size:1.4rem; }
   .item img { height:140px; }
 }
+
+#admin-link {
+  display: block !important;   /* make sure it’s shown */
+  visibility: visible !important;
+  text-align: center;
+  margin: 20px auto;
+}
+/* --- Layout fixes: Builder + Checkout --- */
+
+/* Make sure sizing is predictable */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Builder top controls in a tidy row that wraps nicely */
+.builder .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.builder .row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Inputs look consistent */
+.builder select,
+.builder input[type="number"],
+.checkout-form input {
+  width: 100%;
+  max-width: 220px;      /* gives them a nice, even size on desktop */
+  padding: 10px 12px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+/* Toppings as clean, wrap-friendly "chips" */
+.toppings,
+#toppingsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+#toppingsWrap label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--panel, #fffaf3);
+  white-space: nowrap; /* keeps ($x.xx) with the topping name */
+}
+
+/* Cart drawer: put Name + Phone on one row, Address full width */
+.checkout-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns on desktop */
+  gap: 12px 16px;
+  align-items: start;
+  margin-top: 8px;
+}
+
+/* Better label structure */
+.checkout-form label {
+  display: flex;
+  flex-direction: column; /* label text above input */
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* Make Address span both columns */
+.checkout-form label:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* Totals & actions spacing */
+.drawer-footer .totals { margin-bottom: 10px; }
+.drawer-footer .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* Buttons line-height/height consistency */
+button.primary,
+button.secondary,
+button.ghost,
+#addBuildBtn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  line-height: 1.2;
+}
+
+/* Responsive tweaks: stack fields on smaller screens */
+@media (max-width: 640px) {
+  .builder .row label { flex: 1 1 100%; }      /* each control gets its own line */
+  .builder select,
+  .builder input[type="number"] { max-width: 100%; }
+
+  .checkout-form {
+    grid-template-columns: 1fr; /* stack Name, Phone, Address */
+  }
+  .checkout-form label:nth-child(3) { grid-column: auto; } /* Address no longer spans */
+}
+
