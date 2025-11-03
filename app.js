@@ -1,144 +1,174 @@
 const LS_MENU_KEY = "pizza.menu";
 const LS_CART_KEY = "pizza.cart";
 
+// Utilities
 function currency(n){ return `$${n.toFixed(2)}`; }
+
 function getMenu(){ 
-  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || seedMenu(); } 
-  catch { return seedMenu(); } 
+  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)); } 
+  catch { return null; } 
 }
+
 function saveMenu(menu){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(menu)); }
 
 function getCart(){ 
   try { return JSON.parse(localStorage.getItem(LS_CART_KEY) || "[]"); } 
   catch { return []; } 
 }
+
 function saveCart(cart){ localStorage.setItem(LS_CART_KEY, JSON.stringify(cart)); }
 
-function seedMenu(){
-  const m = {
+function clearCart(){ saveCart([]); }
+
+// Seed menu if empty
+function ensureMenu(){
+  let menu = getMenu();
+  if(menu && menu.items?.length) return menu;
+
+  menu = {
     categories: ["specialty","build","sides","drinks"],
-    items:[
-      {id:"pep-supreme", name:"Heavy Hitter", basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"https://source.unsplash.com/400x300/?pepperoni,pizza"},
-      {id:"margherita", name:"Slice of Summer", basePrice:11.5, category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.", active:true, img:"https://source.unsplash.com/400x300/?margherita,pizza"},
-      {id:"veggie-delight", name:"Veggie Delight", basePrice:12, category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty tomato sauce.", active:true, img:"https://source.unsplash.com/400x300/?veggie,pizza"},
-      {id:"breadsticks", name:"Garlic Knots", basePrice:5, category:"sides", sizes:["Single","Pack"], desc:"Soft garlic knots with butter.", active:true, img:"https://source.unsplash.com/400x300/?breadsticks,garlic"},
-      {id:"cola", name:"Soda", basePrice:2.5, category:"drinks", sizes:["Can","Bottle"], desc:"Chilled soda drinks.", active:true, img:"https://source.unsplash.com/400x300/?soda,drink"}
+    items: [
+      {id:"pep-supreme", name:"Heavy Hitter", basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"https://picsum.photos/id/1025/300/200"},
+      {id:"margherita", name:"Slice of Summer", basePrice:11.5, category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.", active:true, img:"https://picsum.photos/id/103/300/200"},
+      {id:"veggie-delight", name:"Veggie Delight", basePrice:12, category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty tomato sauce.", active:true, img:"https://picsum.photos/id/1080/300/200"}
     ],
-    toppings:[
+    toppings: [
       {name:"Mozzarella", price:1, active:true},
       {name:"Pepperoni", price:1.25, active:true},
       {name:"Mushrooms", price:0.9, active:true},
-      {name:"Onions", price:0.8, active:true}
+      {name:"Olives", price:0.75, active:true}
     ],
-    sizeMultipliers:{Small:1, Medium:1.35, Large:1.75},
+    sizeMultipliers:{Small:1, Medium:1.25, Large:1.5},
     taxRate:0.07
   };
-  saveMenu(m);
-  return m;
+  saveMenu(menu);
+  return menu;
 }
 
-/* ======= Render Menu ======= */
+// Render menu items
 function renderMenu(filter=""){
-  const menu = getMenu();
-  const grid = document.getElementById("menuGrid");
-  if(!grid) return;
+  const menu = ensureMenu();
+  const wrap = document.getElementById("menuWrap");
+  if(!wrap) return;
 
-  const items = menu.items.filter(i=>i.active && i.name.toLowerCase().includes(filter.toLowerCase()));
-  grid.innerHTML = items.map(i=>`
-    <div class="menu-card" data-id="${i.id}">
-      <img src="${i.img}" alt="${i.name}" />
-      <strong>${i.name}</strong>
-      <p>${i.desc}</p>
-      <div>$${i.basePrice.toFixed(2)}</div>
-      <button class="addBtn">Add to Cart</button>
+  const filtered = menu.items.filter(i => i.active && i.name.toLowerCase().includes(filter.toLowerCase()));
+
+  wrap.innerHTML = filtered.map(item => `
+    <div class="menu-item">
+      <img src="${item.img}" alt="${item.name}" class="menu-img"/>
+      <h3>${item.name}</h3>
+      <p>${item.desc}</p>
+      <p>${item.sizes.map(sz => `${sz}: ${currency(item.basePrice*menu.sizeMultipliers[sz])}`).join(" | ")}</p>
+      <button class="add-cart-btn" data-id="${item.id}">Add to Cart</button>
     </div>
   `).join("");
 
-  // Bind Add buttons
-  grid.querySelectorAll(".addBtn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const id = btn.closest(".menu-card").dataset.id;
-      addToCart(id);
-    });
-  });
+  bindAddToCart();
 }
 
-/* ======= Build Your Own ======= */
+// Build Your Own section
 function renderBuildYourOwn(){
-  const menu = getMenu();
-  const wrap = document.getElementById("buildYourOwn");
+  const menu = ensureMenu();
+  const wrap = document.getElementById("buildWrap");
   if(!wrap) return;
 
   wrap.innerHTML = `
-    <h2>Build Your Own Pizza</h2>
-    <div class="menu-card">
-      <strong>Choose your size:</strong>
+    <h3>Build Your Own Pizza</h3>
+    <label>Size:
       <select id="byoSize">
-        ${Object.keys(menu.sizeMultipliers).map(sz=>`<option value="${sz}">${sz}</option>`).join("")}
+        ${Object.keys(menu.sizeMultipliers).map(sz => `<option value="${sz}">${sz}</option>`).join("")}
       </select>
-      <strong>Select toppings:</strong>
-      <div id="byoToppings" style="display:flex; gap:8px; flex-wrap:wrap;">
-        ${menu.toppings.filter(t=>t.active).map(t=>`
-          <label style="display:flex; align-items:center; gap:4px;">
-            <input type="checkbox" value="${t.name}" data-price="${t.price}" /> ${t.name} (+$${t.price})
-          </label>
-        `).join("")}
-      </div>
-      <button id="byoAddBtn" class="primary">Add to Cart</button>
+    </label>
+    <div id="byoToppings">
+      ${menu.toppings.filter(t=>t.active).map((t,idx)=>`
+        <label>
+          <input type="checkbox" data-idx="${idx}" /> ${t.name} (${currency(t.price)})
+        </label>
+      `).join("")}
     </div>
+    <button id="addByoBtn">Add Build-Your-Own to Cart</button>
   `;
 
-  document.getElementById("byoAddBtn").addEventListener("click",()=>{
+  document.getElementById("addByoBtn").addEventListener("click", ()=>{
     const size = document.getElementById("byoSize").value;
-    const selectedToppings = Array.from(document.querySelectorAll("#byoToppings input:checked")).map(inp=>({name: inp.value, price: Number(inp.dataset.price)}));
-    const menuBasePrice = 10; // base for build your own
-    const sizeMult = menu.sizeMultipliers[size] || 1;
-    const total = (menuBasePrice*sizeMult) + selectedToppings.reduce((s,t)=>s+t.price,0);
-
+    const selected = Array.from(document.querySelectorAll("#byoToppings input:checked"))
+                          .map(i=>menu.toppings[Number(i.dataset.idx)]);
+    const unit = 10 * menu.sizeMultipliers[size] + selected.reduce((s,t)=>s+t.price,0);
     const cart = getCart();
     cart.push({
-      id:"BYO-"+Date.now(),
+      id:"byo-"+Date.now(),
       name:"Build Your Own",
       size,
-      toppings:selectedToppings.map(t=>t.name),
+      toppings:selected.map(t=>t.name),
+      unit,
       qty:1,
-      unit: total,
-      total: total
+      total:unit
     });
     saveCart(cart);
     renderCart();
-    alert("Added Build Your Own pizza to cart!");
   });
 }
 
-/* ======= Add to Cart ======= */
-function addToCart(id){
-  const menu = getMenu();
-  const item = menu.items.find(i=>i.id===id);
-  if(!item) return;
+// Cart rendering
+function renderCart(){
   const cart = getCart();
-  cart.push({
-    id: item.id+"-"+Date.now(),
-    name: item.name,
-    qty:1,
-    unit: item.basePrice,
-    total: item.basePrice,
-    size: item.sizes?.[0] || ""
+  const wrap = document.getElementById("cartWrap");
+  if(!wrap) return;
+
+  if(!cart.length){
+    wrap.innerHTML = "<em>Cart is empty.</em>";
+    return;
+  }
+
+  wrap.innerHTML = cart.map((i,idx)=>`
+    <div class="cart-row">
+      <div>${i.name}${i.size?` (${i.size})`:''} × ${i.qty}</div>
+      <div>${i.toppings?.length?i.toppings.join(", "):''}</div>
+      <div>${currency(i.total)}</div>
+      <div><button class="remove-btn" data-idx="${idx}">Remove</button></div>
+    </div>
+  `).join("");
+
+  wrap.querySelectorAll(".remove-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = Number(btn.dataset.idx);
+      const cart = getCart();
+      cart.splice(idx,1);
+      saveCart(cart);
+      renderCart();
+    });
   });
-  saveCart(cart);
-  renderCart();
-  alert(`Added ${item.name} to cart!`);
 }
 
-/* ======= Search ======= */
-const searchBar = document.getElementById("searchBar");
-searchBar?.addEventListener("input", (e)=>{
-  renderMenu(e.target.value);
-});
+// Bind add to cart buttons
+function bindAddToCart(){
+  document.querySelectorAll(".add-cart-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.dataset.id;
+      const menu = ensureMenu();
+      const item = menu.items.find(i=>i.id===id);
+      if(!item) return;
+      const cart = getCart();
+      const unit = item.basePrice * menu.sizeMultipliers[item.sizes[0]];
+      cart.push({id:item.id,name:item.name,qty:1,unit,total:unit});
+      saveCart(cart);
+      renderCart();
+    });
+  });
+}
 
-/* ======= Initialize ======= */
+// Search functionality
+function bindSearch(){
+  const search = document.getElementById("searchInput");
+  if(!search) return;
+  search.addEventListener("input", ()=> renderMenu(search.value));
+}
+
+// Initialize app
 document.addEventListener("DOMContentLoaded", ()=>{
+  ensureMenu();
   renderMenu();
   renderBuildYourOwn();
   renderCart();
+  bindSearch();
 });
