@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script defer src="./app.js"></script>
+  <script defer src="./index.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -14,29 +14,45 @@
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
       <div class="brand-text">
         <strong>P'zzazz Pizza</strong>
-        <small class="badge-staging">Staging</small>
       </div>
     </div>
     <nav class="nav">
       <a href="./index.html" class="active">Home</a>
-      <a href="./login.html">Admin</a>
-      <a href="./payment.html">Cart <span id="cartCount">(0)</span></a>
+      <a href="./admin.html">Admin</a>
+      <a href="./payment.html">Cart (<span id="cartCount">0</span>)</a>
     </nav>
   </header>
 
   <main class="container">
-    <section id="menuSection"></section>
+    <section class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search menu items..."/>
+    </section>
 
-    <section class="card" id="cartSection" style="display:none;">
-      <h2>Your Cart</h2>
+    <section id="menuCategories"></section>
+
+    <section id="buildYourOwn" class="card">
+      <h2>Build Your Own Pizza</h2>
+      <div class="inline">
+        <label>Size
+          <select id="byoSize"></select>
+        </label>
+        <div id="byoToppings"></div>
+      </div>
+      <div>Price: <strong id="byoPrice">$0.00</strong></div>
+      <button id="addByoBtn" class="primary">Add to Cart</button>
+    </section>
+
+    <div id="cartPopup" class="cart-popup hidden">
+      <h3>Your Cart</h3>
       <div id="cartItems"></div>
       <div class="inline">
         <div>Subtotal: <strong id="cartSub">$0.00</strong></div>
         <div>Tax: <strong id="cartTax">$0.00</strong></div>
         <div>Total: <strong id="cartTotal">$0.00</strong></div>
       </div>
-      <button class="primary" id="checkoutBtn">Checkout</button>
-    </section>
+      <button id="checkoutBtn" class="primary">Checkout</button>
+      <button id="closeCartBtn" class="ghost">Close</button>
+    </div>
   </main>
 
   <footer class="site-footer">
