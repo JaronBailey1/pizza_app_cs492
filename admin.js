@@ -1,21 +1,18 @@
 const LS_MENU_KEY = "pizza.menu";
-const LS_ORDERS_KEY = "pizza.orders";
 
-// ------------------ Menu Helpers ------------------
+// Get / set menu in localStorage
 function getMenu(){ 
-  try { 
-    return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; 
-  } catch { 
-    return { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; 
-  } 
+  try { return JSON.parse(localStorage.getItem(LS_MENU_KEY)) || { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; } 
+  catch { return { items: [], toppings: [], sizeMultipliers:{Small:1, Medium:1.25, Large:1.5}, taxRate:0.07 }; } 
 }
 function saveMenu(menu){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(menu)); }
 
-// Ensure menu exists
+// Ensure menu exists (seed if not)
 async function ensureMenu(){
   let m = getMenu();
   if(m.items.length || m.toppings.length) return m;
 
+  // Seed example menu if none exists
   m = {
     categories: ["specialty","build","sides","drinks"],
     items: [
@@ -35,7 +32,7 @@ async function ensureMenu(){
   return m;
 }
 
-// ------------------ DOM Elements ------------------
+// DOM elements
 const adminMenuTable = document.getElementById("adminMenuTable");
 const adminToppings = document.getElementById("adminToppings");
 const addItemBtn = document.getElementById("addItemBtn");
@@ -43,9 +40,8 @@ const saveMenuBtn = document.getElementById("saveMenuBtn");
 const taxRateInput = document.getElementById("taxRateInput");
 const sizeMultWrap = document.getElementById("sizeMultWrap");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
-const refreshMenuBtn = document.getElementById("refreshMenuBtn");
 
-// ------------------ Render Admin ------------------
+// Render admin interface
 function renderAdmin(){
   const menu = getMenu();
 
@@ -86,11 +82,12 @@ function renderAdmin(){
       <input data-size="${sz}" type="number" step="0.05" min="0.5" value="${val}">
     </div>`).join("");
 
+  // Bind events
   bindMenuInputs();
   bindToppingInputs();
 }
 
-// ------------------ Bind Menu Inputs ------------------
+// Menu item input bindings
 function bindMenuInputs(){
   const menu = getMenu();
   adminMenuTable.querySelectorAll("input[data-i]").forEach(input=>{
@@ -99,6 +96,7 @@ function bindMenuInputs(){
       const key = input.dataset.k;
       let val = input.type==="checkbox" ? input.checked : input.value;
       if(key==="basePrice") val = Number(val);
+      if(key==="active") val = Boolean(val);
       menu.items[idx][key] = val;
       saveMenu(menu);
     });
@@ -111,7 +109,7 @@ function bindMenuInputs(){
   });
 }
 
-// ------------------ Bind Topping Inputs ------------------
+// Topping input bindings
 function bindToppingInputs(){
   const menu = getMenu();
   adminToppings.querySelectorAll("input[data-t]").forEach(input=>{
@@ -120,6 +118,7 @@ function bindToppingInputs(){
       const key = input.dataset.k;
       let val = input.type==="checkbox" ? input.checked : input.value;
       if(key==="price") val = Number(val);
+      if(key==="active") val = Boolean(val);
       menu.toppings[idx][key] = val;
       saveMenu(menu);
     });
@@ -132,7 +131,7 @@ function bindToppingInputs(){
   });
 }
 
-// ------------------ Add / Save ------------------
+// Add new menu item
 addItemBtn?.addEventListener("click",()=>{
   const menu = getMenu();
   menu.items.push({
@@ -148,6 +147,7 @@ addItemBtn?.addEventListener("click",()=>{
   saveMenu(menu); renderAdmin();
 });
 
+// Save buttons
 saveMenuBtn?.addEventListener("click",()=>alert("Menu saved in browser storage."));
 saveSettingsBtn?.addEventListener("click",()=>{
   const menu = getMenu();
@@ -159,23 +159,44 @@ saveSettingsBtn?.addEventListener("click",()=>{
   alert("Settings saved.");
 });
 
-refreshMenuBtn?.addEventListener("click", ()=>{
+// Boot admin page
+async function boot(){
+  await ensureMenu();
+  renderAdmin();
+}
+
+document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
+
+
+document.getElementById("refreshMenuBtn")?.addEventListener("click", ()=>{
   alert("Menu saved. Reloading the app to reflect changes…");
   window.location.href = "./index.html";
 });
+/* =========================
+   Admin: Recent Orders view
+   ========================= */
+const LS_ORDERS_KEY = "pizza.orders";
 
-// ------------------ Recent Orders ------------------
-function getOrders(){ try { return JSON.parse(localStorage.getItem(LS_ORDERS_KEY)||"[]"); } catch { return []; } }
-function setOrders(list){ localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(list)); }
+function getOrders() {
+  try { return JSON.parse(localStorage.getItem(LS_ORDERS_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function setOrders(list) {
+  try { localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(list)); }
+  catch(e) { console.error("Failed to save orders:", e); }
+}
+
 function currency(n){ return `$${(Number(n)||0).toFixed(2)}`; }
 
 function orderRow(o, idx){
   const when = o.date ? new Date(o.date) : null;
   const whenStr = when ? when.toLocaleString() : "(unknown time)";
-  const items = Array.isArray(o.items) ? o.items.map(i=>{
+  const items = Array.isArray(o.items) ? o.items.map(i => {
     const size = i.size ? ` (${i.size})` : "";
-    return `<div class="topping-badge">${i.name}${size} x${i.qty}</div>`;
-  }).join(" ") : "<div class='muted'>(no items)</div>";
+    const line = `${i.name}${size} x${i.qty}`;
+    return `<div class="muted">${line} — ${currency((i.price||0)* (i.qty||1))}</div>`;
+  }).join("") : "<div class='muted'>(no items)</div>";
 
   const name = (o.customer?.name || "(Guest)");
   const phone = (o.customer?.phone || "-");
@@ -190,18 +211,22 @@ function orderRow(o, idx){
         <div><strong>${o.id || "(no id)"}</strong></div>
         <div class="muted">${whenStr}</div>
       </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <strong>${name}</strong>
-        <span>📞 ${phone}</span>
-        <span>🏠 ${addr}</span>
+      <div>
+        <div><strong>${name}</strong></div>
+        <div class="muted">Phone: ${phone}</div>
+        <div class="muted">Address: ${addr}</div>
       </div>
-      <div>${items}</div>
+      <div>
+        ${items}
+      </div>
       <div>
         <div>Sub: <strong>${sub}</strong></div>
         <div>Tax: <strong>${tax}</strong></div>
         <div>Total: <strong>${tot}</strong></div>
       </div>
-      <div><button class="ghost" data-del="${idx}">Del</button></div>
+      <div>
+        <button class="ghost" data-del="${idx}">Del</button>
+      </div>
     </div>`;
 }
 
@@ -219,15 +244,16 @@ function renderOrders(){
     <div class="admin-row header-row" style="grid-template-columns: 1.2fr 1fr .8fr .5fr .2fr;">
       <div>Order</div><div>Customer</div><div>Items</div><div>Totals</div><div>Actions</div>
     </div>
-    ${orders.map((o,i)=>orderRow(o,i)).join("")}`;
+    ${orders.map((o, i) => orderRow(o, i)).join("")}
+  `;
 
-  // Delete single order
+  // Delete single order (from the display array which is reversed)
   wrap.querySelectorAll("button[data-del]").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const revIndex = Number(btn.dataset.del);
+    btn.addEventListener("click", ()=>{
+      const revIndex = Number(btn.dataset.del);     // index in reversed array
       const full = getOrders();
-      const idx = full.length - 1 - revIndex;
-      full.splice(idx,1);
+      const idx = full.length - 1 - revIndex;       // map back to original order
+      full.splice(idx, 1);
       setOrders(full);
       renderOrders();
     });
@@ -254,12 +280,8 @@ function bindOrdersActions(){
   });
 }
 
-// ------------------ Boot ------------------
-async function boot(){
-  await ensureMenu();
-  renderAdmin();
+// Kick off on load
+document.addEventListener("DOMContentLoaded", ()=>{
   renderOrders();
   bindOrdersActions();
-}
-
-document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
+});
