@@ -47,32 +47,52 @@
       <div id="adminToppings" class="admin-table admin-table--toppings"></div>
     </section>
 
-    <!-- Settings -->
-    <section class="card">
-      <h2>Settings</h2>
-      <label>Tax Rate
-        <input id="taxRateInput" type="number" step="0.01" min="0" />
-      </label>
-      <div>
-        Size Multipliers:
-        <div id="sizeMultWrap"></div>
-      </div>
-      <button id="saveSettingsBtn" class="primary">Save Settings</button>
-    </section>
+<section class="card" id="settingsSection">
+  <h2>Settings</h2>
 
-    <!-- Coupons (NEW) -->
-    <section class="card">
+  <div class="settings-grid">
+    <label for="taxRateInput">Tax Rate</label>
+    <input id="taxRateInput" type="number" step="0.01" min="0" />
+  </div>
+
+  <div style="font-weight:700; margin:6px 0 4px;">Size Multipliers:</div>
+  <div id="sizeMultWrap">
+    <!-- JS will render rows like:
+    <div class="size-row">
+      <label>Small</label>
+      <input data-size="Small" type="number" step="0.05" min="0.5" value="1">
+    </div>
+    -->
+  </div>
+
+  <button id="saveSettingsBtn" class="primary" style="margin-top:8px;">Save Settings</button>
+</section>
+
+
+    <section class="card" id="couponsSection">
   <h2>Coupons</h2>
-  <div id="adminCoupons" class="admin-table admin-table--coupons"></div>
-  <div class="row gap">
+
+  <div id="adminCoupons" class="admin-table admin-table--coupons">
+    <div class="admin-row header-row">
+      <div>Code</div>
+      <div>Type</div>
+      <div>Value</div>
+      <div>Min Subtotal</div>
+      <div>Active</div>
+      <div>Actions</div>
+    </div>
+    <!-- JS should inject one .admin-row per coupon here -->
+  </div>
+
+  <div class="row gap" id="couponsActions" style="margin-top:8px;">
     <button id="addCouponBtn" class="ghost">+ Add Coupon</button>
     <button id="saveCouponsBtn" class="primary">Save Coupons</button>
   </div>
-  <small class="note">
-    Fields: <strong>percent</strong> = % off (10 = 10%), <strong>amount</strong> = $ off.
-    Min Subtotal optional.
+
+  <small class="note" style="margin-top:6px; display:block;">
+    Fields: <strong>percent</strong> = % off (10 = 10%), <strong>amount</strong> = $ off. Min Subtotal optional.
   </small>
-</section>
+    </section>
 
     <!-- Recent Orders -->
     <section class="card" id="ordersSection">
