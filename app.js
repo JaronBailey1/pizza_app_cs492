@@ -24,8 +24,8 @@ const SEED_MENU = {
     { id: "olives", name: "Olives", price: 0.8, active: true }
   ],
   sizeMultipliers: { Small:1, Medium:1.35, Large:1.75, "16 oz":1 },
-  taxRate: 0.07,                 // ← this comma is crucial
-  builder: {                      // ← your new block
+  taxRate: 0.07,
+  builder: {
     crusts: ["Thin", "Hand-Tossed", "Deep Dish"],
     baseCheesePrice: 10.00,
     included: ["Tomato sauce", "Mozzarella"]
@@ -33,7 +33,7 @@ const SEED_MENU = {
   version: 2
 };
 
-// Utils
+// Utilities
 const $ = id => document.getElementById(id);
 const currency = n => `$${Number(n||0).toFixed(2)}`;
 
@@ -44,7 +44,15 @@ function saveMenu(m){ localStorage.setItem(LS_MENU_KEY, JSON.stringify(m)); }
 
 async function loadMenu() {
   const cached = getMenu();
-  if(cached) return cached;
+  if(cached){
+    // migrate if missing builder
+    if(!cached.builder){
+      cached.builder = SEED_MENU.builder;
+      cached.version = SEED_MENU.version;
+      saveMenu(cached);
+    }
+    return cached;
+  }
   saveMenu(SEED_MENU);
   return SEED_MENU;
 }
@@ -135,16 +143,13 @@ function renderMenuList(menu){
 // Build price
 function recalcBuildPrice(){
   const menu = getMenu();
-  const size = sizeSelect.value || "Small";
-  const mult = menu.sizeMultipliers?.[size] ?? 1;
-
+  const builder = menu.builder || SEED_MENU.builder;
+  const size = sizeSelect.value||"Small";
+  const mult = menu.sizeMultipliers?.[size]??1;
   const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")]
-    .reduce((s,c)=> s + Number(c.dataset.price||0), 0);
-
-  const qty = Math.max(1, Number(qtyInput.value||1));
-  const unit = (menu.builder.baseCheesePrice * mult) + toppingCost;
-
-  estPriceEl.textContent = currency(unit * qty);
+    .reduce((s,c)=>s+Number(c.dataset.price||0),0);
+  const qty = Math.max(1,Number(qtyInput.value||1));
+  estPriceEl.textContent = currency((builder.baseCheesePrice*mult + toppingCost)*qty);
 }
 
 function addPresetToCart(id,size){
@@ -159,30 +164,18 @@ function addPresetToCart(id,size){
 
 function addBuildToCart(){
   const menu = getMenu();
+  const builder = menu.builder || SEED_MENU.builder;
   const crust = baseSelect.value || "Thin";
-  const size = sizeSelect.value || "Small";
-  const mult = menu.sizeMultipliers?.[size] ?? 1;
-
+  const size = sizeSelect.value||"Small";
+  const mult = menu.sizeMultipliers?.[size]??1;
   const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
-  const toppingCost = toppingChecks.reduce((s,c)=> s + Number(c.dataset.price||0), 0);
+  const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0),0);
   const qty = Math.max(1, Number(qtyInput.value||1));
-
-  const unit = (menu.builder.baseCheesePrice * mult) + toppingCost;
-
-  const line = {
-    id: crypto.randomUUID(),
-    name: `Build Your Own - ${crust} (${size})`,
-    size,
-    qty,
-    unit,
-    total: unit * qty,
-    toppings: toppingChecks.map(c=>c.value)
-  };
-
+  const unit = builder.baseCheesePrice*mult+toppingCost;
+  const line = { id: crypto.randomUUID(), name:`Build Your Own - ${crust} (${size})`, size, qty, unit, total:unit*qty, toppings: toppingChecks.map(c=>c.value) };
   const cart = getCart(); cart.push(line); saveCart(cart);
   cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
 }
-
 
 // Cart render
 function renderCart(){
@@ -238,15 +231,12 @@ function renderBuilderToppings(){
 
 function renderBuilderOptions(){
   const menu = getMenu();
-  // Base = crust style (not menu items)
-  baseSelect.innerHTML = menu.builder.crusts
-    .map(c => `<option value="${c}">${c}</option>`)
-    .join("");
+  const builder = menu.builder || SEED_MENU.builder;
 
-  // Keep sizes from multipliers, exclude the drink size
+  baseSelect.innerHTML = builder.crusts.map(c=>`<option value="${c}">${c}</option>`).join("");
   sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers)
-    .filter(s => s !== "16 oz")
-    .map(s => `<option>${s}</option>`)
+    .filter(s=>s!=="16 oz")
+    .map(s=>`<option>${s}</option>`)
     .join("");
 }
 
@@ -256,15 +246,15 @@ function bindEvents(){
   closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
   clearCart.addEventListener("click",()=>{ saveCart([]); });
   checkoutBtn.addEventListener("click", ()=>{
-  const customer = {
-    name: (custName?.value || "").trim(),
-    phone: (custPhone?.value || "").trim(),
-    address: (custAddress?.value || "").trim()
-  };
-  try { localStorage.setItem("pizza.customer", JSON.stringify(customer)); } catch(e){}
-  window.location.href = "./payment.html";
-});
-baseSelect.addEventListener("change",recalcBuildPrice);
+    const customer = {
+      name: (custName?.value || "").trim(),
+      phone: (custPhone?.value || "").trim(),
+      address: (custAddress?.value || "").trim()
+    };
+    try { localStorage.setItem("pizza.customer", JSON.stringify(customer)); } catch(e){}
+    window.location.href = "./payment.html";
+  });
+  baseSelect.addEventListener("change",recalcBuildPrice);
   sizeSelect.addEventListener("change",recalcBuildPrice);
   qtyInput.addEventListener("input",recalcBuildPrice);
   toppingsWrap.addEventListener("change",recalcBuildPrice);
