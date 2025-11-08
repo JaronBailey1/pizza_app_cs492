@@ -103,7 +103,7 @@ async function ensureMenu() {
     // Seed a minimal, nice-looking starter set (if nothing saved yet)
     m = structuredClone(DEFAULT_MENU);
     m.items = [
-      { id:"pep-supreme", name:"Heavy Hitter",     basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Classic pepperoni with extra cheese.", active:true, img:"images/pep-supreme.jpg" },
+      { id:"pep-supreme", name:"Heavy Hitter",     basePrice:12.99, category:"specialty", sizes:["Small","Medium","Large"], desc:"Double pepperoni with extra cheese.", active:true, img:"images/pep-supreme.jpg" },
       { id:"margherita",  name:"Slice of Summer",  basePrice:11.5,  category:"specialty", sizes:["Small","Medium","Large"], desc:"Fresh mozzarella, basil, tomato.",   active:true, img:"images/margherita.jpg" },
       { id:"veggie-delight", name:"Veggie Delight",basePrice:12,    category:"specialty", sizes:["Small","Medium","Large"], desc:"Seasonal vegetables & zesty sauce.", active:true, img:"images/veggie.jpg" },
       { id:"coke", name:"Coca-Cola", basePrice:1.5, category:"drinks", sizes:["16 oz"], desc:"Classic soda.", active:true, img:"" }
