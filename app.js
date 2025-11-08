@@ -71,17 +71,32 @@ function computeDiscount(subtotal, coupon){
 
 // Load/migrate menu
 async function loadMenu() {
-  const cached = getMenu();
-  if (cached) {
-    // Simple migration for builder/version
-    if (!cached.builder) cached.builder = SEED_MENU.builder;
-    if (!cached.sizeMultipliers) cached.sizeMultipliers = SEED_MENU.sizeMultipliers;
-    cached.version = SEED_MENU.version;
-    saveMenu(cached);
-    return cached;
+  // try to read cache
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(LS_MENU_KEY) || "null"); } catch {}
+
+  // if missing or malformed, seed fresh
+  if (!cached || typeof cached !== "object" || !Array.isArray(cached.items)) {
+    const fresh = { ...SEED_MENU };
+    try { localStorage.setItem(LS_MENU_KEY, JSON.stringify(fresh)); } catch {}
+    return fresh;
   }
-  saveMenu(SEED_MENU);
-  return SEED_MENU;
+
+  // light migration to ensure required fields exist
+  if (!Array.isArray(cached.categories)) cached.categories = SEED_MENU.categories;
+  if (!cached.sizeMultipliers) cached.sizeMultipliers = SEED_MENU.sizeMultipliers;
+  if (typeof cached.taxRate !== "number") cached.taxRate = SEED_MENU.taxRate;
+  if (!cached.builder) cached.builder = SEED_MENU.builder;
+  if (!Array.isArray(cached.toppings)) cached.toppings = [];
+
+  // normalize category shape (strings -> objects)
+  if (cached.categories.length && typeof cached.categories[0] === "string") {
+    cached.categories = cached.categories.map(id => ({ id, name: id[0].toUpperCase()+id.slice(1) }));
+  }
+
+  // persist migrated data
+  try { localStorage.setItem(LS_MENU_KEY, JSON.stringify(cached)); } catch {}
+  return cached;
 }
 
 // Cached elements
