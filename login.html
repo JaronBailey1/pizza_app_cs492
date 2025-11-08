@@ -14,7 +14,6 @@
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
       <div class="brand-text">
         <strong>Admin Login</strong>
-        <small class="badge-staging">Staging</small>
       </div>
     </div>
     <nav class="nav">
@@ -23,22 +22,23 @@
     </nav>
   </header>
 
-  <main class="container">
-    <section class="card" style="max-width:400px; margin:auto;">
-      <h2>Sign In</h2>
-      <form id="loginForm">
-        <label>Username
-          <input id="username" required />
-        </label>
-        <label>Password
-          <input id="password" type="password" required />
-        </label>
-        <button class="primary" type="submit">Login</button>
-        <small class="note">This is a mock login; credentials are stored locally for demo.</small>
-      </form>
-      <div id="loginResult" style="margin-top:12px;"></div>
-    </section>
-  </main>
+<main class="container login-page">
+  <section class="card login-card">
+    <h2>Sign In</h2>
+    <form id="loginForm">
+      <label>Username
+        <input id="username" required />
+      </label>
+      <label>Password
+        <input id="password" type="password" required />
+      </label>
+      <button class="primary" type="submit">Login</button>
+      <small class="note">This is a mock login; credentials are stored locally for demo.</small>
+    </form>
+    <div id="loginResult"></div>
+  </section>
+</main>
+
 
   <footer class="site-footer">
     <small>© <span id="year"></span> P'zzazz Pizza</small>
