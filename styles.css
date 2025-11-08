@@ -288,29 +288,41 @@ input,select{
 
 .orders-table .ghost{ width:100%; border-radius:10px; }
 
-/* --- Home Page "Order Now" Banner --- */
+/* --- Scrolling "Order Now" Banner --- */
 .promo-banner {
-  background: linear-gradient(90deg, #ff6b6b, #ffb347, #ff6b6b);
-  background-size: 300% 100%;
-  color: #fff;
-  text-align: center;
-  font-weight: 700;
-  padding: 10px 16px;
-  font-size: 1.05rem;
-  letter-spacing: 0.3px;
-  animation: bannerSlide 6s linear infinite;
+  overflow: hidden;
   position: sticky;
   top: 0;
-  z-index: 100;
+  width: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ffb347, #ff6b6b);
+  background-size: 300% 100%;
+  animation: bannerGradient 8s linear infinite;
   box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  z-index: 100;
 }
 
-/* Moving gradient animation */
-@keyframes bannerSlide {
+.promo-text {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 10px 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  animation: scrollText 15s linear infinite;
+}
+
+/* Gradient shimmer effect */
+@keyframes bannerGradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+/* Text scrolling animation */
+@keyframes scrollText {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
 
