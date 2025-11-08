@@ -342,39 +342,53 @@ function currency(n){ return `$${(Number(n)||0).toFixed(2)}`; }
 function orderRow(o, idx){
   const when = o.date ? new Date(o.date) : null;
   const whenStr = when ? when.toLocaleString() : "(unknown time)";
-  const items = Array.isArray(o.items) ? o.items.map(i => {
+  const itemsHtml = (Array.isArray(o.items) ? o.items : []).map(i=>{
+    const lineTotal = Number(i.total ?? (i.unit||0) * (i.qty||1));
     const size = i.size ? ` (${i.size})` : "";
-    const line = `${i.name}${size} x${i.qty}`;
-    // support either i.unit or i.price fields
-    const price = Number(i.unit ?? i.price ?? 0);
-    return `<div class="muted">${line} — ${currency(price * (i.qty||1))}</div>`;
-  }).join("") : "<div class='muted'>(no items)</div>";
+    return `
+      <div class="line">
+        <span class="name">${i.name}${size}</span>
+        <span class="qty">× ${i.qty || 1}</span>
+        <span class="price"><strong>${currency(lineTotal)}</strong></span>
+      </div>`;
+  }).join("");
+
+  const sub = Number(o.totals?.sub || 0);
+  const tax = Number(o.totals?.tax || 0);
+  const disc = Number(o.totals?.discount || 0);
+  const tot = Number(o.totals?.total || (sub - disc + tax));
 
   const name = (o.customer?.name || "(Guest)");
   const phone = (o.customer?.phone || "-");
   const addr = (o.customer?.address || "-");
-  const sub = currency(o.totals?.sub || 0);
-  const tax = currency(o.totals?.tax || 0);
-  const tot = currency(o.totals?.total || 0);
 
   return `
-    <div class="admin-row" data-order-index="${idx}" style="align-items:flex-start; grid-template-columns: 1.2fr 1fr .8fr .5fr .2fr;">
+    <div class="order-row" data-order-index="${idx}">
       <div>
-        <div><strong>${o.id || "(no id)"}</strong></div>
-        <div class="muted">${whenStr}</div>
+        <div class="order-id">${o.id || "(no id)"}</div>
+        <div class="order-meta">${whenStr}</div>
       </div>
+
+      <div class="customer">
+        <strong>${name}</strong>
+        <span class="muted">Phone: ${phone}</span>
+        <span class="muted">Addr: ${addr}</span>
+      </div>
+
+      <div class="items">
+        ${itemsHtml || `<div class="muted">(no items)</div>`}
+      </div>
+
+      <div class="totals">
+        <div class="muted">Sub: <strong>${currency(sub)}</strong></div>
+        ${disc>0 ? `<div class="muted">Disc: <strong>-${currency(disc).slice(1)}</strong></div>` : ``}
+        <div class="muted">Tax: <strong>${currency(tax)}</strong></div>
+        <div class="grand">Total: ${currency(tot)}</div>
+      </div>
+
       <div>
-        <div><strong>${name}</strong></div>
-        <div class="muted">Phone: ${phone}</div>
-        <div class="muted">Address: ${addr}</div>
+        <button class="ghost" data-del="${idx}">Del</button>
       </div>
-      <div>${items}</div>
-      <div>
-        <div>Sub: <strong>${sub}</strong></div>
-        <div>Tax: <strong>${tax}</strong></div>
-        <div>Total: <strong>${tot}</strong></div>
-      </div>
-      <div><button class="ghost" data-del="${idx}">Del</button></div>
     </div>`;
 }
 
@@ -383,29 +397,38 @@ function renderOrders(){
   if(!wrap) return;
 
   const orders = getOrders().slice().reverse(); // newest first
+
   if(!orders.length){
     wrap.innerHTML = `<div class="muted" style="padding:8px;">No orders yet.</div>`;
     return;
   }
 
   wrap.innerHTML = `
-    <div class="admin-row header-row" style="grid-template-columns: 1.2fr 1fr .8fr .5fr .2fr;">
-      <div>Order</div><div>Customer</div><div>Items</div><div>Totals</div><div>Actions</div>
+    <div class="orders-table">
+      <div class="header-row">
+        <div>Order</div>
+        <div>Customer</div>
+        <div>Items</div>
+        <div>Totals</div>
+        <div>Actions</div>
+      </div>
+      ${orders.map((o,i)=> orderRow(o, i)).join("")}
     </div>
-    ${orders.map((o, i) => orderRow(o, i)).join("")}
   `;
 
+  // delete buttons (map reversed index back to original)
   wrap.querySelectorAll("button[data-del]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
-      const revIndex = Number(btn.dataset.del); // index in reversed array
+      const revIndex = Number(btn.dataset.del);
       const full = getOrders();
-      const idx = full.length - 1 - revIndex;   // map back to original
+      const idx = full.length - 1 - revIndex;
       full.splice(idx, 1);
       setOrders(full);
       renderOrders();
     });
   });
 }
+
 
 function bindOrdersActions(){
   document.getElementById("clearOrdersBtn")?.addEventListener("click", ()=>{
