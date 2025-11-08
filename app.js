@@ -329,10 +329,12 @@ function bindEvents(){
   $("addBuildBtn").addEventListener("click",addBuildToCart);
 
   // Coupon actions
+  // Coupon actions (only if coupon elements exist)
+if (applyCouponBtn && couponInput && removeCouponBtn) {
   applyCouponBtn.addEventListener("click", () => {
     const code = (couponInput.value || "").trim();
     const cart = getCart();
-    const subtotal = cart.reduce((s,c)=>s+c.total,0);
+    const subtotal = cart.reduce((s, c) => s + c.total, 0);
     const { ok, coupon, msg } = validateCoupon(code, subtotal);
     if (!ok) { couponMsg.textContent = msg; return; }
     saveAppliedCoupon(coupon);
