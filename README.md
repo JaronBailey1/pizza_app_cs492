@@ -1,16 +1,16 @@
 # pizza_app_cs492
 
-This is a complete, working front-end prototype for the Pizza Restaurant Ordering System.
+This is a complete, working prototype for the Pizza Restaurant Ordering System.
 
 ## Sprint 2 Features
 - Guest browsing (no login required) — menu, build-your-own, cart, totals
 - Checkout routes to **payment.html**, which confirms the order
-- **Order Confirmation** after mock payment (shows items, totals, and customer info)
-- **Admin** (login required) — edit menu/toppings/tax, changes persist in localStorage
+- **Order Confirmation** after payment (shows items, totals, and customer info)
+- **Admin** (login required) — edit menu/toppings/tax, see past orders
 - **Mobile-optimized** (viewport + responsive CSS)
 
 ## Staff Login (Demo)
-- **Username:** `admin`  **Password:** `admin123`
+- **Username:** `admin`  **Password:** `pizza123`
 
 ## Run locally
 ```bash
