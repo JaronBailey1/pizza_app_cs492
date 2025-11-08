@@ -341,5 +341,57 @@ button.ghost,
   font-weight: 600;
   margin-top: 10px;
 }
+/* --- Admin tables --- */
+.admin-table { 
+  display: grid; 
+  row-gap: 8px; 
+}
+
+/* Menu items table: Name | Base $ | Category | Active | Actions */
+.admin-table--menu .admin-row {
+  display: grid;
+  grid-template-columns: 1.6fr 120px 1fr 80px 72px;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Header row style */
+.admin-table .header-row {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* Inputs fill cells */
+.admin-table input[type="text"],
+.admin-table input[type="number"],
+.admin-table input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+/* Checkbox centered; consistent size */
+.admin-table input[type="checkbox"] {
+  justify-self: center;
+  width: 18px;
+  height: 18px;
+}
+
+/* Action button sized to cell */
+.admin-table .ghost {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* Toppings table: Name | Price | Active | Actions */
+.admin-table--toppings .admin-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 90px 80px;
+  gap: 8px;
+  align-items: center;
+}
 
 
