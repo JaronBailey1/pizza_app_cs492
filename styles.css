@@ -144,7 +144,10 @@ input,select{
 #cartDrawer .cart-row input[type="number"]{
   width:80px; text-align:center; padding:6px; border-radius:8px; border:1px solid var(--border); flex-shrink:0;
 }
-
+/* Ensure cart drawer appears above sticky banner */
+.drawer {
+  z-index: 9999; /* higher than .promo-banner (100) */
+}
 /* Footer */
 .site-footer{ text-align:center; color:var(--muted); padding:18px 12px; }
 
