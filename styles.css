@@ -288,5 +288,30 @@ input,select{
 
 .orders-table .ghost{ width:100%; border-radius:10px; }
 
+/* --- Home Page "Order Now" Banner --- */
+.promo-banner {
+  background: linear-gradient(90deg, #ff6b6b, #ffb347, #ff6b6b);
+  background-size: 300% 100%;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  padding: 10px 16px;
+  font-size: 1.05rem;
+  letter-spacing: 0.3px;
+  animation: bannerSlide 6s linear infinite;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Moving gradient animation */
+@keyframes bannerSlide {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 
 
