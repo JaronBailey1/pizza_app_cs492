@@ -118,6 +118,19 @@ function cacheEls(){
   couponMsg = $("couponMsg"); discountRow = $("discountRow"); discountTotal = $("discountTotal");
 }
 
+// -------- Cart drawer helpers (mobile-safe) --------
+function isDesktopWidth() {
+  return window.innerWidth > 768; // adjust breakpoint if desired
+}
+function openCartDrawer() {
+  cartDrawer?.classList.add("open");
+  cartDrawer?.setAttribute("aria-hidden","false");
+}
+function closeCartDrawer() {
+  cartDrawer?.classList.remove("open");
+  cartDrawer?.setAttribute("aria-hidden","true");
+}
+
 // -------- Category dropdown --------
 function renderCategoryOptions(menu){
   if(!categoryFilter) return;
@@ -182,8 +195,8 @@ function renderMenuList(menu){
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
       const size = sel?.value || (menu.items.find(i=>i.id===id)?.sizes?.[0] || "Small");
       addPresetToCart(id,size);
-      cartDrawer?.classList.add("open");
-      cartDrawer?.setAttribute("aria-hidden","false");
+      // Only auto-open cart on desktop
+      if (isDesktopWidth()) openCartDrawer();
     });
   });
 }
@@ -238,7 +251,8 @@ function addBuildToCart(){
   };
 
   const cart = getCart(); cart.push(line); saveCart(cart);
-  cartDrawer?.classList.add("open"); cartDrawer?.setAttribute("aria-hidden","false");
+  // Only auto-open cart on desktop
+  if (isDesktopWidth()) openCartDrawer();
 }
 
 // -------- Render cart --------
@@ -330,8 +344,8 @@ function renderBuilderOptions(){
 
 // -------- Events --------
 function bindEvents(){
-  cartButton?.addEventListener("click",()=>{ cartDrawer?.classList.add("open"); cartDrawer?.setAttribute("aria-hidden","false"); });
-  closeCart?.addEventListener("click",()=>{ cartDrawer?.classList.remove("open"); cartDrawer?.setAttribute("aria-hidden","true"); });
+  cartButton?.addEventListener("click", openCartDrawer);
+  closeCart?.addEventListener("click", closeCartDrawer);
   clearCart?.addEventListener("click",()=>{ saveCart([]); });
   checkoutBtn?.addEventListener("click", ()=>{
     const customer = {
