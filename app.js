@@ -1,30 +1,34 @@
+// ===============================
+// app.js (fixed, safe, complete)
+// ===============================
+
 // Keys
-const LS_MENU_KEY = "pizza.menu";
-const LS_CART_KEY = "pizza.cart";
+const LS_MENU_KEY   = "pizza.menu";
+const LS_CART_KEY   = "pizza.cart";
 const LS_COUPON_KEY = "pizza.coupon";
 
 // Seed data (with builder + version)
 const SEED_MENU = {
   categories: [
     { id: "specialty", name: "Specialty Pizzas" },
-    { id: "build", name: "Build Your Own" },
-    { id: "sides", name: "Sides" },
-    { id: "drinks", name: "Drinks" }
+    { id: "build",     name: "Build Your Own" },
+    { id: "sides",     name: "Sides" },
+    { id: "drinks",    name: "Drinks" }
   ],
   items: [
-    { id: "pep-supreme", name: "Heavy Hitter", desc: "Classic pepperoni with extra cheese.", img: "https://cdn.pixabay.com/photo/2025/09/28/09/25/fizz-9859977_1280.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://cdn.pixabay.com/photo/2023/05/28/14/13/ai-generated-8023786_640.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "https://cdn.pixabay.com/photo/2017/12/09/08/18/pizza-3007395_640.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
-    { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "https://sallysbakingaddiction.com/wp-content/uploads/2020/02/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
-    { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "https://lahannahholdings.com/wp-content/uploads/2022/07/Coca-Cola-16oz-Can.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
-    { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "https://libertycokedelivery.com/cdn/shop/products/Sprite_16oz_580x.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
+    { id: "pep-supreme",   name: "Heavy Hitter",     desc: "Classic pepperoni with extra cheese.", img: "https://cdn.pixabay.com/photo/2025/09/28/09/25/fizz-9859977_1280.jpg", basePrice: 12.99, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "margherita",    name: "Slice of Summer",  desc: "Fresh mozzarella, basil, tomato.",     img: "https://cdn.pixabay.com/photo/2023/05/28/14/13/ai-generated-8023786_640.jpg", basePrice: 11.5,  category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "veggie-delight",name: "Veggie Delight",   desc: "Seasonal vegetables & zesty tomato sauce.", img: "https://cdn.pixabay.com/photo/2017/12/09/08/18/pizza-3007395_640.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
+    { id: "garlic-knots",  name: "Get Twisted",      desc: "Warm garlic knots brushed with herb butter.", img: "https://sallysbakingaddiction.com/wp-content/uploads/2020/02/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
+    { id: "coke",          name: "Coca-Cola",        desc: "Classic soda.",                        img: "https://lahannahholdings.com/wp-content/uploads/2022/07/Coca-Cola-16oz-Can.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
+    { id: "sprite",        name: "Sprite",           desc: "Lemon-lime soda.",                    img: "https://libertycokedelivery.com/cdn/shop/products/Sprite_16oz_580x.jpg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
   ],
   toppings: [
-    { id: "mozzarella", name: "Extra Mozzarella", price: 1.0, active: true },
-    { id: "pepperoni", name: "Pepperoni", price: 1.25, active: true },
-    { id: "mushrooms", name: "Mushrooms", price: 0.9, active: true },
-    { id: "onions", name: "Onions", price: 0.6, active: true },
-    { id: "olives", name: "Olives", price: 0.8, active: true }
+    { id: "mozzarella", name: "Extra Mozzarella", price: 1.0,  active: true },
+    { id: "pepperoni",  name: "Pepperoni",        price: 1.25, active: true },
+    { id: "mushrooms",  name: "Mushrooms",        price: 0.9,  active: true },
+    { id: "onions",     name: "Onions",           price: 0.6,  active: true },
+    { id: "olives",     name: "Olives",           price: 0.8,  active: true }
   ],
   sizeMultipliers: { Small:1, Medium:1.35, Large:1.75, "16 oz":1 },
   taxRate: 0.07,
@@ -36,13 +40,13 @@ const SEED_MENU = {
   version: 2
 };
 
-// Coupons catalog
+// Optional built-in coupons (can be replaced by admin-driven coupons later)
 const COUPONS = {
-  "WELCOME10": { type: "percent", value: 10 },             // 10% off
-  "SAVE5":     { type: "amount",  value: 5, minSubtotal: 20 } // $5 off if subtotal >= $20
+  "WELCOME10": { type: "percent", value: 10 },                 // 10% off
+  "SAVE5":     { type: "amount",  value: 5, minSubtotal: 20 }  // $5 off if subtotal >= $20
 };
 
-// Utils
+// -------- Utils --------
 const $ = id => document.getElementById(id);
 const currency = n => `$${Number(n||0).toFixed(2)}`;
 
@@ -69,20 +73,18 @@ function computeDiscount(subtotal, coupon){
   return 0;
 }
 
-// Load/migrate menu
+// -------- Load/migrate menu (self-healing) --------
 async function loadMenu() {
-  // try to read cache
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(LS_MENU_KEY) || "null"); } catch {}
 
-  // if missing or malformed, seed fresh
   if (!cached || typeof cached !== "object" || !Array.isArray(cached.items)) {
     const fresh = { ...SEED_MENU };
     try { localStorage.setItem(LS_MENU_KEY, JSON.stringify(fresh)); } catch {}
     return fresh;
   }
 
-  // light migration to ensure required fields exist
+  // light migration
   if (!Array.isArray(cached.categories)) cached.categories = SEED_MENU.categories;
   if (!cached.sizeMultipliers) cached.sizeMultipliers = SEED_MENU.sizeMultipliers;
   if (typeof cached.taxRate !== "number") cached.taxRate = SEED_MENU.taxRate;
@@ -94,12 +96,11 @@ async function loadMenu() {
     cached.categories = cached.categories.map(id => ({ id, name: id[0].toUpperCase()+id.slice(1) }));
   }
 
-  // persist migrated data
   try { localStorage.setItem(LS_MENU_KEY, JSON.stringify(cached)); } catch {}
   return cached;
 }
 
-// Cached elements
+// -------- Cached elements --------
 let menuGrid, categoryFilter, searchInput, baseSelect, sizeSelect, toppingsWrap, qtyInput, estPriceEl;
 let cartButton, cartDrawer, closeCart, cartItems, subTotal, taxTotal, grandTotal, checkoutBtn, clearCart, cartCount;
 let custName, custPhone, custAddress;
@@ -117,14 +118,14 @@ function cacheEls(){
   couponMsg = $("couponMsg"); discountRow = $("discountRow"); discountTotal = $("discountTotal");
 }
 
-// Category dropdown
+// -------- Category dropdown --------
 function renderCategoryOptions(menu){
   if(!categoryFilter) return;
   categoryFilter.innerHTML = `<option value="all">All</option>` +
     (menu.categories||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
 }
 
-// Menu grid
+// -------- Menu grid --------
 function renderMenuList(menu){
   if(!menuGrid) return;
   const term = (searchInput?.value||"").toLowerCase().trim();
@@ -181,27 +182,27 @@ function renderMenuList(menu){
       const sel = menuGrid.querySelector(`select.sizePick[data-id="${id}"]`);
       const size = sel?.value || (menu.items.find(i=>i.id===id)?.sizes?.[0] || "Small");
       addPresetToCart(id,size);
-      cartDrawer.classList.add("open");
-      cartDrawer.setAttribute("aria-hidden","false");
+      cartDrawer?.classList.add("open");
+      cartDrawer?.setAttribute("aria-hidden","false");
     });
   });
 }
 
-// Builder calc
+// -------- Builder calc --------
 function recalcBuildPrice(){
-  const menu = getMenu();
+  const menu = getMenu() || SEED_MENU;
   const builder = menu.builder || SEED_MENU.builder;
-  const size = sizeSelect.value||"Small";
-  const mult = menu.sizeMultipliers?.[size]??1;
-  const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")]
+  const size = sizeSelect?.value || "Small";
+  const mult = menu.sizeMultipliers?.[size] ?? 1;
+  const toppingCost = [...(toppingsWrap?.querySelectorAll("input[type=checkbox]:checked")||[])]
     .reduce((s,c)=>s+Number(c.dataset.price||0),0);
-  const qty = Math.max(1,Number(qtyInput.value||1));
-  estPriceEl.textContent = currency((builder.baseCheesePrice*mult + toppingCost)*qty);
+  const qty = Math.max(1, Number(qtyInput?.value || 1));
+  if (estPriceEl) estPriceEl.textContent = currency((builder.baseCheesePrice*mult + toppingCost)*qty);
 }
 
-// Cart helpers
+// -------- Cart helpers --------
 function addPresetToCart(id,size){
-  const menu = getMenu();
+  const menu = getMenu() || SEED_MENU;
   const item = menu.items.find(i=>i.id===id);
   if(!item) return;
   const mult = menu.sizeMultipliers?.[size]??1;
@@ -219,14 +220,14 @@ function addPresetToCart(id,size){
 }
 
 function addBuildToCart(){
-  const menu = getMenu();
+  const menu = getMenu() || SEED_MENU;
   const builder = menu.builder || SEED_MENU.builder;
-  const crust = baseSelect.value || "Thin";
-  const size = sizeSelect.value||"Small";
+  const crust = baseSelect?.value || "Thin";
+  const size = sizeSelect?.value || "Small";
   const mult = menu.sizeMultipliers?.[size]??1;
-  const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
+  const toppingChecks = [...(toppingsWrap?.querySelectorAll("input[type=checkbox]:checked")||[])];
   const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0),0);
-  const qty = Math.max(1, Number(qtyInput.value||1));
+  const qty = Math.max(1, Number(qtyInput?.value||1));
   const unit = builder.baseCheesePrice*mult+toppingCost;
 
   const line = {
@@ -237,12 +238,14 @@ function addBuildToCart(){
   };
 
   const cart = getCart(); cart.push(line); saveCart(cart);
-  cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
+  cartDrawer?.classList.add("open"); cartDrawer?.setAttribute("aria-hidden","false");
 }
 
-// Render cart
+// -------- Render cart --------
 function renderCart(){
   const cart = getCart();
+  if (!cartItems) return;
+
   cartItems.innerHTML = cart.map(c=>{
     return `<div class="cart-row" data-id="${c.id}">
       <div>${c.name}${c.toppings?.length?`<br><small>Toppings: ${c.toppings.join(", ")}</small>`:""}</div>
@@ -273,7 +276,7 @@ function renderCart(){
   recalcTotals();
 }
 
-// Totals (with coupon pre-tax)
+// -------- Totals (coupon pre-tax) --------
 function recalcTotals(){
   const cart = getCart();
   const subtotal = cart.reduce((s,c)=>s+c.total,0);
@@ -282,48 +285,55 @@ function recalcTotals(){
   const discount = computeDiscount(subtotal, applied);
   const taxable = Math.max(0, subtotal - discount);
 
-  const tax = taxable * SEED_MENU.taxRate;
+  const taxRate = (getMenu()?.taxRate ?? SEED_MENU.taxRate);
+  const tax = taxable * taxRate;
   const grand = taxable + tax;
 
-  subTotal.textContent = currency(subtotal);
+  if (subTotal) subTotal.textContent = currency(subtotal);
 
-  if (discount > 0) {
-    discountRow.style.display = "";
-    discountTotal.textContent = `-${currency(discount).replace("$","$")}`;
-  } else {
-    discountRow.style.display = "none";
-    if (discountTotal) discountTotal.textContent = "-$0.00";
+  if (discountRow && discountTotal) {
+    if (discount > 0) {
+      discountRow.style.display = "";
+      discountTotal.textContent = `-${currency(discount)}`;
+    } else {
+      discountRow.style.display = "none";
+      discountTotal.textContent = "-$0.00";
+    }
   }
 
-  taxTotal.textContent = currency(tax);
-  grandTotal.textContent = currency(grand);
+  if (taxTotal)   taxTotal.textContent   = currency(tax);
+  if (grandTotal) grandTotal.textContent = currency(grand);
 
-  checkoutBtn.disabled = !(custName.value && custPhone.value && custAddress.value && cart.length>0);
-  cartCount.textContent = cart.length;
+  if (checkoutBtn) {
+    const ok = !!(custName?.value && custPhone?.value && custAddress?.value && cart.length>0);
+    checkoutBtn.disabled = !ok;
+  }
+  if (cartCount) cartCount.textContent = cart.length;
 }
 
-// Builder UI
+// -------- Builder UI --------
 function renderBuilderToppings(){
-  const menu = getMenu();
+  const menu = getMenu() || SEED_MENU;
+  if (!toppingsWrap) return;
   toppingsWrap.innerHTML = (menu.toppings||[]).map(t=>`
     <label><input type="checkbox" value="${t.name}" data-price="${t.price}"> ${t.name} (${currency(t.price)})</label>
   `).join("");
 }
 function renderBuilderOptions(){
-  const menu = getMenu();
+  const menu = getMenu() || SEED_MENU;
   const builder = menu.builder || SEED_MENU.builder;
-  baseSelect.innerHTML = builder.crusts.map(c=>`<option value="${c}">${c}</option>`).join("");
-  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers)
+  if (baseSelect) baseSelect.innerHTML = builder.crusts.map(c=>`<option value="${c}">${c}</option>`).join("");
+  if (sizeSelect) sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers)
     .filter(s=>s!=="16 oz")
     .map(s=>`<option>${s}</option>`).join("");
 }
 
-// Events
+// -------- Events --------
 function bindEvents(){
-  cartButton.addEventListener("click",()=>{ cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false"); });
-  closeCart.addEventListener("click",()=>{ cartDrawer.classList.remove("open"); cartDrawer.setAttribute("aria-hidden","true"); });
-  clearCart.addEventListener("click",()=>{ saveCart([]); });
-  checkoutBtn.addEventListener("click", ()=>{
+  cartButton?.addEventListener("click",()=>{ cartDrawer?.classList.add("open"); cartDrawer?.setAttribute("aria-hidden","false"); });
+  closeCart?.addEventListener("click",()=>{ cartDrawer?.classList.remove("open"); cartDrawer?.setAttribute("aria-hidden","true"); });
+  clearCart?.addEventListener("click",()=>{ saveCart([]); });
+  checkoutBtn?.addEventListener("click", ()=>{
     const customer = {
       name: (custName?.value || "").trim(),
       phone: (custPhone?.value || "").trim(),
@@ -333,62 +343,72 @@ function bindEvents(){
     window.location.href = "./payment.html";
   });
 
-  baseSelect.addEventListener("change",recalcBuildPrice);
-  sizeSelect.addEventListener("change",recalcBuildPrice);
-  qtyInput.addEventListener("input",recalcBuildPrice);
-  toppingsWrap.addEventListener("change",recalcBuildPrice);
+  baseSelect?.addEventListener("change",recalcBuildPrice);
+  sizeSelect?.addEventListener("change",recalcBuildPrice);
+  qtyInput?.addEventListener("input",recalcBuildPrice);
+  toppingsWrap?.addEventListener("change",recalcBuildPrice);
   [custName,custPhone,custAddress].forEach(inp=>inp?.addEventListener("input",recalcTotals));
 
-  categoryFilter.addEventListener("change",()=>{ renderMenuList(getMenu()); });
-  searchInput.addEventListener("input",()=>{ renderMenuList(getMenu()); });
-  $("addBuildBtn").addEventListener("click",addBuildToCart);
+  categoryFilter?.addEventListener("change",()=>{ renderMenuList(getMenu()||SEED_MENU); });
+  searchInput?.addEventListener("input",()=>{ renderMenuList(getMenu()||SEED_MENU); });
+  $("addBuildBtn")?.addEventListener("click",addBuildToCart);
 
-  // Coupon actions
   // Coupon actions (only if coupon elements exist)
-if (applyCouponBtn && couponInput && removeCouponBtn) {
-  applyCouponBtn.addEventListener("click", () => {
-    const code = (couponInput.value || "").trim();
-    const cart = getCart();
-    const subtotal = cart.reduce((s, c) => s + c.total, 0);
-    const { ok, coupon, msg } = validateCoupon(code, subtotal);
-    if (!ok) { couponMsg.textContent = msg; return; }
-    saveAppliedCoupon(coupon);
-    couponMsg.textContent = `Applied: ${coupon.code}${coupon.type === "percent" ? ` (${coupon.value}% off)` : ` (${currency(coupon.value)} off)`}`;
-    removeCouponBtn.style.display = "";
-    applyCouponBtn.style.display = "none";
-    recalcTotals();
-  });
+  if (applyCouponBtn && couponInput && removeCouponBtn) {
+    applyCouponBtn.addEventListener("click", () => {
+      const code = (couponInput.value || "").trim();
+      const cart = getCart();
+      const subtotal = cart.reduce((s, c) => s + c.total, 0);
+      const { ok, coupon, msg } = validateCoupon(code, subtotal);
+      if (!ok) { if (couponMsg) couponMsg.textContent = msg; return; }
+      saveAppliedCoupon(coupon);
+      if (couponMsg) couponMsg.textContent = `Applied: ${coupon.code}${coupon.type === "percent" ? ` (${coupon.value}% off)` : ` (${currency(coupon.value)} off)`}`;
+      removeCouponBtn.style.display = "";
+      applyCouponBtn.style.display = "none";
+      recalcTotals();
+    });
 
-  removeCouponBtn.addEventListener("click", () => {
-    saveAppliedCoupon(null);
-    couponMsg.textContent = "Coupon removed.";
-    removeCouponBtn.style.display = "none";
-    applyCouponBtn.style.display = "";
-    recalcTotals();
-  });
-}
-
-// Init
-async function init(){
-  cacheEls();
-  const menu = await loadMenu();
-  renderCategoryOptions(menu);
-  renderMenuList(menu);
-  renderBuilderOptions();
-  renderBuilderToppings();
-  bindEvents();
-
-  // Restore coupon UI state
-  const existing = getAppliedCoupon();
-  if (existing) {
-    couponInput.value = existing.code;
-    couponMsg.textContent = `Applied: ${existing.code}${existing.type === "percent" ? ` (${existing.value}% off)` : ` (${currency(existing.value)} off)`}`;
-    removeCouponBtn.style.display = "";
-    applyCouponBtn.style.display = "none";
+    removeCouponBtn.addEventListener("click", () => {
+      saveAppliedCoupon(null);
+      if (couponMsg) couponMsg.textContent = "Coupon removed.";
+      removeCouponBtn.style.display = "none";
+      applyCouponBtn.style.display = "";
+      recalcTotals();
+    });
   }
+} // <-- important: close bindEvents()
 
-  recalcBuildPrice();
-  renderCart();
+// -------- Init --------
+async function init(){
+  try {
+    cacheEls();
+    const menu = await loadMenu();
+
+    // If items somehow empty, reseed and use fresh
+    if (!menu.items || !menu.items.length) {
+      saveMenu(SEED_MENU);
+    }
+    const m = getMenu() || SEED_MENU;
+
+    renderCategoryOptions(m);
+    renderMenuList(m);
+    renderBuilderOptions();
+    renderBuilderToppings();
+    bindEvents();
+
+    // Restore coupon UI state (if present)
+    const existing = getAppliedCoupon();
+    if (existing && couponInput && applyCouponBtn && removeCouponBtn && couponMsg) {
+      couponInput.value = existing.code;
+      couponMsg.textContent = `Applied: ${existing.code}${existing.type === "percent" ? ` (${existing.value}% off)` : ` (${currency(existing.value)} off)`}`;
+      removeCouponBtn.style.display = "";
+      applyCouponBtn.style.display = "none";
+    }
+
+    recalcBuildPrice();
+    renderCart();
+  } catch (e) {
+    console.error("Init failed:", e);
+  }
 }
-
 document.addEventListener("DOMContentLoaded", init);
