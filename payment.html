@@ -25,7 +25,20 @@
       border:1px solid var(--border);
       background:#fff;
       font-size:1rem;
+      width:100%;
     }
+
+    /* Confirmation box */
+    #confirmBox{
+      display:none;
+      margin-top:16px;
+      padding:16px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#f8fafc;
+    }
+    #confirmBox h3{ margin:0 0 8px; }
+    .muted{ color:#475569; }
   </style>
 </head>
 <body>
@@ -60,7 +73,18 @@
     <!-- Payment Details -->
     <section class="card">
       <h2>Payment Details</h2>
-      <form id="payForm" class="pay-grid" novalidate>
+
+      <!-- NEW: Add email capture -->
+      <p class="muted" style="margin-top:-4px">
+        We’ll send your receipt and order details to your email.
+      </p>
+
+      <form id="payForm" class="pay-grid" novalidate data-default-eta="30–40 minutes">
+        <label for="custEmail">Email Address
+          <input id="custEmail" name="custEmail" type="email" autocomplete="email"
+                 placeholder="you@example.com" required />
+        </label>
+
         <label for="cardName">Name on Card
           <input id="cardName" name="cardName" autocomplete="cc-name" required />
         </label>
@@ -90,6 +114,15 @@
       </form>
 
       <div id="payResult" style="margin-top:12px;"></div>
+
+      <!-- NEW: Post-payment confirmation -->
+      <div id="confirmBox" aria-live="polite">
+        <h3>Thank you for your order! 🎉</h3>
+        <p>Your payment was successful.</p>
+        <p><strong>Estimated delivery time:</strong> <span id="etaText">30–40 minutes</span>.</p>
+        <p>Order details have been emailed to <strong id="confirmEmail"></strong>.</p>
+        <p class="muted">Need help? Reply to the email receipt or contact support.</p>
+      </div>
     </section>
   </main>
 
