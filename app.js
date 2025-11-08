@@ -16,8 +16,8 @@ const SEED_MENU = {
     { id: "margherita", name: "Slice of Summer", desc: "Fresh mozzarella, basil, tomato.", img: "https://cdn.pixabay.com/photo/2023/05/28/14/13/ai-generated-8023786_640.jpg", basePrice: 11.5, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "veggie-delight", name: "Veggie Delight", desc: "Seasonal vegetables & zesty tomato sauce.", img: "https://cdn.pixabay.com/photo/2017/12/09/08/18/pizza-3007395_640.jpg", basePrice: 12, category: "specialty", sizes: ["Small","Medium","Large"], active: true },
     { id: "garlic-knots", name: "Get Twisted", desc: "Warm garlic knots brushed with herb butter.", img: "https://sallysbakingaddiction.com/wp-content/uploads/2020/02/garlic-knots.jpg", basePrice: 4.5, category: "sides", active: true },
-    { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "https://soda-emporium.com/wp-content/uploads/2021/05/16oz-Coke.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
-    { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "https://i5.walmartimages.com/seo/Sprite-Lemon-Lime-Soda-Pop-16-fl-oz-Can_3b4e4064-d9bb-4f2d-8b1f-a103b2522a97.c422e7827905d832b901131c3617f545.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
+    { id: "coke", name: "Coca-Cola", desc: "Classic soda.", img: "https://lahannahholdings.com/wp-content/uploads/2022/07/Coca-Cola-16oz-Can.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true },
+    { id: "sprite", name: "Sprite", desc: "Lemon-lime soda.", img: "https://i5.walmartimages.com/asr/1dde1917-8fc2-4749-b48e-de8047a4ffd9_1.d6eeb187dfd8e74b0ec08dd59fe58943.jpeg", basePrice: 1.5, category: "drinks", sizes: ["16 oz"], active: true }
   ],
   toppings: [
     { id: "mozzarella", name: "Extra Mozzarella", price: 1.0, active: true },
