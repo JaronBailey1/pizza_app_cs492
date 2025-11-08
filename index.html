@@ -67,9 +67,9 @@
 
       <div id="toppingsWrap" class="toppings"></div>
 
-      <div class="builder-footer">
+      <div class="builder-footer" style="display:flex; flex-direction:column; gap:12px;">
         <div>Estimated: <strong id="estPrice">$0.00</strong></div>
-        <button id="addBuildBtn" class="primary" style="margin-top: 24px;">Add to Cart</button>
+        <button id="addBuildBtn" class="primary">Add to Cart</button>
       </div>
     </section>
   </main>
@@ -80,13 +80,30 @@
       <strong>Your Cart</strong>
       <button id="closeCart" aria-label="Close cart">✕</button>
     </header>
+
     <div id="cartItems" class="cart-items"></div>
+
     <footer class="drawer-footer">
       <div class="totals">
         <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
+        <div id="discountRow" style="display:none;">
+          Discount: <strong id="discountTotal">-$0.00</strong>
+        </div>
         <div>Tax: <strong id="taxTotal">$0.00</strong></div>
         <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
       </div>
+
+      <!-- Coupon UI -->
+      <div class="coupon" style="margin:10px 0 12px;">
+        <label for="couponInput" style="font-weight:600;">Coupon</label>
+        <div class="coupon-row" style="display:flex; gap:8px; align-items:center; margin:6px 0 4px;">
+          <input id="couponInput" placeholder="Enter code" />
+          <button id="applyCoupon" class="secondary">Apply</button>
+          <button id="removeCoupon" class="ghost" style="display:none;">Remove</button>
+        </div>
+        <small id="couponMsg" style="color: var(--muted);"></small>
+      </div>
+
       <div class="checkout-form">
         <label>Name: <input id="custName" placeholder="Your name" /></label>
         <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
