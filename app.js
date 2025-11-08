@@ -1,5 +1,6 @@
-const LS_MENU_KEY = "pizza.menu";
-const LS_CART_KEY = "pizza.cart";
+// ===============================
+// app.js (fixed, safe, complete)
+// ===============================
 
 // Utilities
 function currency(n){ return `$${n.toFixed(2)}`; }

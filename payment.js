@@ -12,12 +12,23 @@ function getCart(){
   catch { return []; } 
 }
 
-function clearCart(){ localStorage.setItem(LS_CART_KEY, "[]"); }
+// discount helper
+function computeDiscount(subtotal, coupon){
+  if (!coupon) return 0;
+  if (coupon.minSubtotal && subtotal < Number(coupon.minSubtotal)) return 0;
+  if (coupon.type === "percent") return +(subtotal * (Number(coupon.value || 0) / 100)).toFixed(2);
+  if (coupon.type === "amount")  return Math.min(subtotal, Number(coupon.value || 0));
+  return 0;
+}
 
+function clearCart(){ setCart([]); }
+
+// render the order summary on load
 function renderSummary(){
   const menu = getMenu();
   const taxRate = menu?.taxRate ?? 0.07;
   const cart = getCart();
+  const coupon = getCoupon();
 
   const wrap = document.getElementById("orderItems");
   wrap.innerHTML = cart.length ? cart.map(i => `
@@ -27,25 +38,44 @@ function renderSummary(){
         ${i.toppings?.length ? `<small>${i.toppings.join(", ")}</small>` : ``}
         <small>${currency(i.unit)}</small>
       </div>
-      <div><strong>${currency(i.total)}</strong></div>
-    </div>
-  `).join("") : `<em>Your cart is empty.</em>`;
+    `).join("")
+    : `<em>Your cart is empty.</em>`;
 
-  const subtotal = cart.reduce((s,i)=>s+i.total,0);
-  const tax = subtotal * taxRate;
-  document.getElementById("sumSub").textContent = currency(subtotal);
-  document.getElementById("sumTax").textContent = currency(tax);
-  document.getElementById("sumTotal").textContent = currency(subtotal + tax);
+  const subtotal = cart.reduce((s,i)=> s + Number(i.total || 0), 0);
+  const discount = computeDiscount(subtotal, coupon);
+  const taxable  = Math.max(0, subtotal - discount);
+  const tax      = taxable * taxRate;
+  const grand    = taxable + tax;
+
+  $("sumSub").textContent   = currency(subtotal);
+  $("sumTax").textContent   = currency(tax);
+  $("sumTotal").textContent = currency(grand);
+
+  const discRow = $("sumDiscRow");
+  const discVal = $("sumDisc");
+  if (discRow && discVal){
+    if (discount > 0){
+      discRow.style.display = "";
+      discVal.textContent = `-${currency(discount).slice(1)}`;
+    } else {
+      discRow.style.display = "none";
+    }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const cust = JSON.parse(localStorage.getItem("pizza.customer") || "{}");
   renderSummary();
 
   const form = document.getElementById("payForm");
   const result = document.getElementById("payResult");
 
-  form.addEventListener("submit", (e) => {
+  const form   = $("payForm");
+  const result = $("payResult");
+  const confirmBox = $("confirmBox");
+  const etaText = $("etaText");
+  const confirmEmail = $("confirmEmail");
+
+  form?.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const cart = getCart();
