@@ -222,8 +222,16 @@ function renderBuilderToppings(){
 
 function renderBuilderOptions(){
   const menu = getMenu();
-  baseSelect.innerHTML = `<option value="plain">Plain Cheese</option>` + menu.items.filter(i=>i.active).map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
-  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers).filter(s=>s!=="16 oz").map(s=>`<option>${s}</option>`).join("");
+  // Base = crust style (not menu items)
+  baseSelect.innerHTML = menu.builder.crusts
+    .map(c => `<option value="${c}">${c}</option>`)
+    .join("");
+
+  // Keep sizes from multipliers, exclude the drink size
+  sizeSelect.innerHTML = Object.keys(menu.sizeMultipliers)
+    .filter(s => s !== "16 oz")
+    .map(s => `<option>${s}</option>`)
+    .join("");
 }
 
 // Events
