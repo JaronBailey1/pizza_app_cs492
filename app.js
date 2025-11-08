@@ -136,12 +136,16 @@ function renderMenuList(menu){
 // Build price
 function recalcBuildPrice(){
   const menu = getMenu();
-  const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
-  const size = sizeSelect.value||"Small";
-  const mult = menu.sizeMultipliers?.[size]??1;
-  const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")].reduce((s,c)=>s+Number(c.dataset.price||0),0);
-  const qty = Math.max(1,Number(qtyInput.value||1));
-  estPriceEl.textContent = currency((base.basePrice*mult + toppingCost)*qty);
+  const size = sizeSelect.value || "Small";
+  const mult = menu.sizeMultipliers?.[size] ?? 1;
+
+  const toppingCost = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")]
+    .reduce((s,c)=> s + Number(c.dataset.price||0), 0);
+
+  const qty = Math.max(1, Number(qtyInput.value||1));
+  const unit = (menu.builder.baseCheesePrice * mult) + toppingCost;
+
+  estPriceEl.textContent = currency(unit * qty);
 }
 
 function addPresetToCart(id,size){
@@ -156,17 +160,30 @@ function addPresetToCart(id,size){
 
 function addBuildToCart(){
   const menu = getMenu();
-  const base = menu.items.find(i=>i.id===baseSelect.value)||{basePrice:10,name:"Plain Cheese"};
-  const size = sizeSelect.value||"Small";
-  const mult = menu.sizeMultipliers?.[size]??1;
+  const crust = baseSelect.value || "Thin";
+  const size = sizeSelect.value || "Small";
+  const mult = menu.sizeMultipliers?.[size] ?? 1;
+
   const toppingChecks = [...toppingsWrap.querySelectorAll("input[type=checkbox]:checked")];
-  const toppingCost = toppingChecks.reduce((s,c)=>s + Number(c.dataset.price||0),0);
+  const toppingCost = toppingChecks.reduce((s,c)=> s + Number(c.dataset.price||0), 0);
   const qty = Math.max(1, Number(qtyInput.value||1));
-  const unit = base.basePrice*mult+toppingCost;
-  const line = { id: crypto.randomUUID(), name:`${base.name} (${size})`, size, qty, unit, total:unit*qty, toppings: toppingChecks.map(c=>c.value) };
+
+  const unit = (menu.builder.baseCheesePrice * mult) + toppingCost;
+
+  const line = {
+    id: crypto.randomUUID(),
+    name: `Build Your Own - ${crust} (${size})`,
+    size,
+    qty,
+    unit,
+    total: unit * qty,
+    toppings: toppingChecks.map(c=>c.value)
+  };
+
   const cart = getCart(); cart.push(line); saveCart(cart);
   cartDrawer.classList.add("open"); cartDrawer.setAttribute("aria-hidden","false");
 }
+
 
 // Cart render
 function renderCart(){
