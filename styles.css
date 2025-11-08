@@ -277,3 +277,69 @@ button.ghost,
   font-size: 0.9rem;
 }
 
+/* --- Login Page Styling --- */
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 100px); /* center vertically under header/footer */
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+
+.login-card h2 {
+  margin: 0;
+  text-align: center;
+}
+
+#loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#loginForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+}
+
+#loginForm input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 1rem;
+}
+
+#loginForm button.primary {
+  margin-top: 8px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+#loginResult {
+  text-align: center;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+
