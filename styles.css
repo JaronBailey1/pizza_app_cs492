@@ -240,5 +240,53 @@ input,select{
   padding: 8px 10px;
   border-radius: 10px;
 }
+/* --- Admin: Recent Orders compact table --- */
+.orders-table { display:grid; row-gap:10px; }
+
+.orders-table .header-row,
+.orders-table .order-row{
+  display:grid;
+  grid-template-columns: 1.1fr 1fr 1.4fr .6fr 80px; /* Order | Customer | Items | Totals | Actions */
+  gap:10px;
+  align-items:start;
+}
+
+.orders-table .header-row{
+  font-weight:700;
+  color:var(--muted);
+}
+
+.order-id{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight:700;
+}
+
+.order-meta{ color:var(--muted); font-size:.9rem; }
+
+.customer{
+  display:flex; flex-direction:column; gap:4px;
+}
+.customer strong{ font-weight:700; }
+.customer .muted{ color:var(--muted); font-size:.9rem; }
+
+.items{
+  display:flex; flex-direction:column; gap:4px;
+  max-height:110px; overflow:auto; padding-right:2px;
+}
+.items .line{
+  font-size:.95rem;
+  display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;
+}
+.items .line .name{ font-weight:600; }
+.items .line .qty{ color:var(--muted); }
+
+.totals{
+  display:flex; flex-direction:column; gap:4px; text-align:right;
+}
+.totals .muted{ color:var(--muted); font-size:.9rem; }
+.totals .grand{ font-weight:800; }
+
+.orders-table .ghost{ width:100%; border-radius:10px; }
+
 
 
