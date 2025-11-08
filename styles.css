@@ -213,3 +213,14 @@ input,select{
   #adminToppings .admin-row{ grid-template-columns:1fr 1fr; }
   #adminToppings .admin-row.header-row{ grid-template-columns:1fr; }
 }
+
+/* --- Fix: Coupons header horizontal alignment --- */
+#couponsWrap .admin-row.header-row {
+  display: grid;
+  grid-template-columns: 160px 130px 130px 150px 80px 80px; /* Code | Type | Value | Min Subtotal | Active | Actions */
+  gap: 8px;
+  align-items: center;
+  font-weight: 700;
+  color: var(--muted);
+}
+
