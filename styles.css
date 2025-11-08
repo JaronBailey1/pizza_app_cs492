@@ -271,3 +271,9 @@ button.ghost,
   box-sizing: border-box;
 }
 
+.builder-note {
+  margin: 6px 0 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
