@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,11 +8,24 @@
   <link rel="stylesheet" href="./styles.css" />
   <script defer src="./payment.js"></script>
   <style>
-    .badge-staging{background:#fde68a;color:#7c2d12;border:1px solid #f59e0b;
-      padding:4px 8px;border-radius:8px;font-weight:700;}
-    .pay-grid{display:grid;gap:12px;grid-template-columns:1fr;}
-    .order-summary{background:#0d162a;border:1px solid var(--border);border-radius:12px;padding:12px;}
-    .inline{display:flex; gap:10px;}
+    .badge-staging{
+      background:#fde68a;color:#7c2d12;border:1px solid #f59e0b;
+      padding:4px 8px;border-radius:8px;font-weight:700;
+    }
+    .inline{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .pay-grid{ display:grid; gap:12px; grid-template-columns:1fr; }
+    .order-summary{
+      background:#0d162a; border:1px solid var(--border);
+      border-radius:12px; padding:12px;
+    }
+    /* Slightly larger inputs for card fields */
+    #payForm input{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:1rem;
+    }
   </style>
 </head>
 <body>
@@ -32,34 +44,60 @@
   </header>
 
   <main class="container">
+    <!-- Order Summary -->
     <section class="card">
       <h2>Order Summary</h2>
       <div id="orderItems"></div>
-      <div class="inline">
+
+      <div class="inline" style="margin-top:8px">
         <div>Subtotal: <strong id="sumSub">$0.00</strong></div>
+        <div id="sumDiscRow" style="display:none;">Discount: <strong id="sumDisc">-$0.00</strong></div>
         <div>Tax: <strong id="sumTax">$0.00</strong></div>
         <div>Total: <strong id="sumTotal">$0.00</strong></div>
       </div>
     </section>
 
+    <!-- Payment Details -->
     <section class="card">
       <h2>Payment Details</h2>
-      <form id="payForm" class="pay-grid">
-        <label>Name on Card <input id="cardName" required /></label>
-        <label>Card Number <input id="cardNumber" required placeholder="4242 4242 4242 4242"/></label>
+      <form id="payForm" class="pay-grid" novalidate>
+        <label for="cardName">Name on Card
+          <input id="cardName" name="cardName" autocomplete="cc-name" required />
+        </label>
+
+        <label for="cardNumber">Card Number
+          <input id="cardNumber" name="cardNumber" inputmode="numeric" autocomplete="cc-number"
+                 placeholder="4242 4242 4242 4242" required />
+        </label>
+
         <div class="inline">
-          <label>Exp MM/YY <input id="cardExp" placeholder="12/34" required/></label>
-          <label>CVC <input id="cardCvc" placeholder="123" required/></label>
-          <label>ZIP <input id="cardZip" placeholder="00000" required/></label>
+          <label for="cardExp">Exp MM/YY
+            <input id="cardExp" name="cardExp" inputmode="numeric" autocomplete="cc-exp"
+                   placeholder="12/34" required />
+          </label>
+          <label for="cardCvc">CVC
+            <input id="cardCvc" name="cardCvc" inputmode="numeric" autocomplete="cc-csc"
+                   placeholder="123" required />
+          </label>
+          <label for="cardZip">ZIP
+            <input id="cardZip" name="cardZip" inputmode="numeric" autocomplete="postal-code"
+                   placeholder="00000" required />
+          </label>
         </div>
+
         <button class="primary" type="submit">Pay Now</button>
         <small class="note">This is a mock flow; no real payment is processed.</small>
       </form>
+
       <div id="payResult" style="margin-top:12px;"></div>
     </section>
   </main>
 
-  <footer class="site-footer"><small>© <span id="year"></span> P'zzazz Pizza</small></footer>
-  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
+  <footer class="site-footer">
+    <small>© <span id="year"></span> P'zzazz Pizza</small>
+  </footer>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
