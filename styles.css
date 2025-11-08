@@ -214,13 +214,31 @@ input,select{
   #adminToppings .admin-row.header-row{ grid-template-columns:1fr; }
 }
 
-/* --- Fix: Coupons header horizontal alignment --- */
-#couponsWrap .admin-row.header-row {
+/* --- Coupons table layout fix --- */
+.admin-table--coupons .header-row,
+.admin-table--coupons .admin-row {
   display: grid;
-  grid-template-columns: 160px 130px 130px 150px 80px 80px; /* Code | Type | Value | Min Subtotal | Active | Actions */
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 80px 80px; /* Code | Type | Value | Min Subtotal | Active | Actions */
   gap: 8px;
   align-items: center;
+}
+
+/* Make header bold and muted */
+.admin-table--coupons .header-row {
   font-weight: 700;
   color: var(--muted);
 }
+
+/* Align checkboxes and buttons neatly */
+.admin-table--coupons input[type="checkbox"] {
+  justify-self: center;
+  width: 18px;
+  height: 18px;
+}
+.admin-table--coupons .ghost {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
 
