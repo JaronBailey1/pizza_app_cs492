@@ -24,14 +24,13 @@ const SEED_MENU = {
     { id: "olives", name: "Olives", price: 0.8, active: true }
   ],
   sizeMultipliers: { Small:1, Medium:1.35, Large:1.75, "16 oz":1 },
-  taxRate: 0.07
-  
-  // NEW: builder config
-  builder: {
+  taxRate: 0.07,                 // ← this comma is crucial
+  builder: {                      // ← your new block
     crusts: ["Thin", "Hand-Tossed", "Deep Dish"],
-    baseCheesePrice: 10.00, // cheese pizza before toppings, Medium multiplier = 1.35 etc.
+    baseCheesePrice: 10.00,
     included: ["Tomato sauce", "Mozzarella"]
-  }
+  },
+  version: 2
 };
 
 // Utils
