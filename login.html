@@ -1,102 +1,49 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>P'zzazz Pizza - Staging</title>
+  <title>Admin Login • P'zzazz Pizza</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="./assets/logo.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script defer src="./app.js"></script>
+  <script defer src="./login.js"></script>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <img src="./assets/logo.svg" alt="P'zzazz Pizza logo" class="logo"/>
       <div class="brand-text">
-        <strong>P'zzazz Pizza - Staging</strong>
+        <strong>Admin Login</strong>
         <small class="badge-staging">Staging</small>
       </div>
     </div>
     <nav class="nav">
-      <a href="./index.html" class="active">Home</a>
-      <a href="./login.html">Admin</a>
+      <a href="./index.html">Home</a>
+      <a href="./login.html" class="active">Admin</a>
     </nav>
-    <button id="cartButton" aria-label="Open cart" class="cart-btn">
-      Cart <span id="cartCount" class="pill">0</span>
-    </button>
   </header>
 
   <main class="container">
-    <section class="filters card">
-      <div class="row gap">
-        <label>Category
-          <select id="categoryFilter"></select>
+    <section class="card" style="max-width:400px; margin:auto;">
+      <h2>Sign In</h2>
+      <form id="loginForm">
+        <label>Username
+          <input id="username" required />
         </label>
-        <label class="grow">Search
-          <input id="searchInput" placeholder="Search menu..." />
+        <label>Password
+          <input id="password" type="password" required />
         </label>
-      </div>
-    </section>
-
-    <section class="grid card" id="menuGrid" aria-live="polite">
-      <!-- Menu items render here -->
-    </section>
-
-    <section class="builder card">
-      <h2>Build Your Own</h2>
-      <div class="row">
-        <label>Base
-          <select id="baseSelect">
-            <option value="Thin">Thin</option>
-            <option value="Hand-Tossed">Hand-Tossed</option>
-            <option value="Deep Dish">Deep Dish</option>
-          </select>
-        </label>
-        <label>Size
-          <select id="sizeSelect">
-            <option>Small</option>
-            <option selected>Medium</option>
-            <option>Large</option>
-          </select>
-        </label>
-        <label>Qty
-          <input id="qtyInput" type="number" min="1" value="1" />
-        </label>
-      </div>
-
-      <div id="toppingsWrap" class="toppings"></div>
-
-      <div class="builder-footer">
-        <div>Estimated: <strong id="estPrice">$0.00</strong></div>
-        <button id="addBuildBtn" class="primary">Add to Cart</button>
-      </div>
+        <button class="primary" type="submit">Login</button>
+        <small class="note">This is a mock login; credentials are stored locally for demo.</small>
+      </form>
+      <div id="loginResult" style="margin-top:12px;"></div>
     </section>
   </main>
 
-  <!-- Cart Drawer -->
-  <aside id="cartDrawer" class="drawer" aria-hidden="true" aria-label="Shopping cart">
-    <header class="drawer-header">
-      <strong>Your Cart</strong>
-      <button id="closeCart" aria-label="Close cart">✕</button>
-    </header>
-    <div id="cartItems" class="cart-items"></div>
-    <footer class="drawer-footer">
-      <div class="totals">
-        <div>Subtotal: <strong id="subTotal">$0.00</strong></div>
-        <div>Tax: <strong id="taxTotal">$0.00</strong></div>
-        <div><strong>Total: <span id="grandTotal">$0.00</span></strong></div>
-      </div>
-      <div class="checkout-form">
-        <label>Name: <input id="custName" placeholder="Your name" /></label>
-        <label>Phone: <input id="custPhone" placeholder="Phone number" /></label>
-        <label>Address: <input id="custAddress" placeholder="Delivery address" /></label>
-      </div>
-      <div class="actions">
-        <button id="checkoutBtn" class="primary">Checkout</button>
-        <button id="clearCart" class="secondary">Clear Cart</button>
-      </div>
-    </footer>
-  </aside>
+  <footer class="site-footer">
+    <small>© <span id="year"></span> P'zzazz Pizza</small>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
 </body>
 </html>
